@@ -1,6 +1,10 @@
 # Coin-Flip Password Generator
 
+**[Use it here](https://tunnell.github.io/coin_flip_password_generator/coinflip-password-generation.html)** — works offline, no dependencies.
+
 Generate truly random AES-128 or AES-256 keys using nothing but a fair coin — no electronics, no software RNG, no trust required.
+
+Copyright @tunnell 2026
 
 ## What is this?
 
