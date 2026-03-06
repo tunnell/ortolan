@@ -1,6 +1,6 @@
 # Physical Entropy Password Generator
 
-**[Use it here](https://tunnell.github.io/coin_flip_password_generator/coinflip-password-generation.html)** — works offline, no dependencies.
+**[Use it here](https://tunnell.github.io/physical_entropy_password_generator/physical-entropy-password-generator.html)** — works offline, no dependencies.
 
 Generate truly random 256-bit keys using coins or dice — no electronics, no software RNG, no trust required.
 
@@ -27,7 +27,7 @@ Both methods use zero-waste encoding: coins map 5 bits to 32 characters (2⁵ = 
 
 | File | Purpose |
 |------|---------|
-| `coinflip-password-generation.html` | The printable reference card with lookup tables, procedures, worksheets, and security notes. Open in any browser. |
+| `physical-entropy-password-generator.html` | The printable reference card with lookup tables, procedures, worksheets, and security notes. Open in any browser. |
 | `README.md` | This file. |
 | `LICENSE` | License. |
 
