@@ -33,7 +33,7 @@ Both methods use zero-waste encoding: coins map 5 bits to 32 characters (2⁵ = 
 
 ## Usage
 
-1. Open `coinflip-password-generation.html` in a browser (works fully offline — no JavaScript dependencies, no network requests).
+1. Open `physical-entropy-password-generator.html` in a browser (works fully offline — no JavaScript dependencies, no network requests).
 2. Print it out, or use it on-screen.
 3. Choose **Coin** or **Dice** tab.
 4. Follow the procedure:
