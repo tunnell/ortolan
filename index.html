@@ -3,12 +3,30 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Physical Entropy Password Generator — Coin &amp; Dice Reference Card</title>
+<title>Ortolan — Dice (or Coin) Password Generator</title>
 <style>
   @media print {
-    body { margin: 0.5in; font-size: 11pt; }
-    .no-print { display: none; }
+    body { margin: 0.5in; font-size: 11pt; background: #fff; padding: 0; }
+    .no-print, .header-bird, .ortolan-note, .tool-link { display: none; }
     .page-break { page-break-before: always; }
+    .container { box-shadow: none; padding: 0; max-width: 100%; }
+    .header-row { display: block; }
+    h1 { font-size: 1.4rem; }
+    .subtitle { margin-bottom: 1rem; padding-bottom: 0.5rem; }
+    /* Worksheet print optimization */
+    .worksheet { border: 2px solid #000; border-radius: 0; }
+    .worksheet table { border-collapse: collapse; }
+    .worksheet th { background: #eee !important; border: 1px solid #000; font-size: 0.7rem; padding: 0.3rem; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .worksheet td { border: 1px solid #888; padding: 0.4rem 0.3rem; }
+    .worksheet td.write-in { background: #fff !important; min-height: 1.5em; border: 1px solid #000; }
+    .worksheet-double { gap: 0.5rem; }
+    /* Lookup tables */
+    .lookup-grid, .dice-grid, .one-bit-grid { gap: 1px; background: #000; }
+    .lookup-grid .cell, .dice-grid .cell, .one-bit-grid .cell { border: none; }
+    .lookup-grid .cell .char, .dice-grid .cell .char, .one-bit-grid .cell .char { background: #eee !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    /* Hide non-essential for printing */
+    .security-note, .rationale, .ref-section { font-size: 0.75rem; }
+    .mode-tabs { margin-top: 0; }
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
@@ -162,22 +180,100 @@
     margin: 0 0.1em;
     font-weight: 400;
   }
+
+  .header-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 1.5rem;
+    margin-bottom: 0.5rem;
+  }
+  .header-text { flex: 1; }
+  .header-bird {
+    flex-shrink: 0;
+    text-align: right;
+  }
+  .header-bird img {
+    width: 120px;
+    height: auto;
+    border-radius: 6px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  }
+  .header-bird .attribution {
+    font-size: 0.65rem;
+    color: #999;
+    margin-top: 4px;
+    line-height: 1.3;
+  }
+  .header-bird .attribution a {
+    color: #888;
+    text-decoration: none;
+  }
+  .header-bird .attribution a:hover {
+    text-decoration: underline;
+  }
+
+  .ortolan-note {
+    font-size: 0.85rem;
+    color: #666;
+    margin-bottom: 1rem;
+    padding: 0.8rem 1rem;
+    background: #fafaf7;
+    border-radius: 5px;
+    border-left: 3px solid #c9a227;
+  }
+  .ortolan-note a { color: #7a6012; }
+
+  .tool-link {
+    display: inline-block;
+    font-size: 0.85rem;
+    color: #1a4a6e;
+    text-decoration: none;
+    padding: 0.4rem 0.8rem;
+    border: 1px solid #d0d8e0;
+    border-radius: 5px;
+    margin-bottom: 1rem;
+    transition: all 0.15s;
+  }
+  .tool-link:hover {
+    background: #e8f0f6;
+    border-color: #1a4a6e;
+  }
 </style>
 </head>
 <body>
 <div class="container">
 
-  <h1>Physical Entropy Password Generator</h1>
-  <p class="subtitle">Generate verifiably random 256-bit keys using coins or dice — no electronics, no software RNG, no trust required</p>
+  <div class="header-row">
+    <div class="header-text">
+      <h1>Ortolan</h1>
+      <p class="subtitle">Generate verifiably random 256-bit keys using dice (or coins) — no electronics, no software RNG, no trust required</p>
+    </div>
+    <div class="header-bird">
+      <img src="ortolan.jpg" alt="Ortolan bunting">
+      <div class="attribution">
+        <a href="https://commons.wikimedia.org/w/index.php?curid=26699114">Photo: Pierre Dalous</a><br>CC BY-SA 3.0
+      </div>
+    </div>
+  </div>
+
+  <div class="ortolan-note">
+    <strong>Why physical randomness?</strong> Digital random number generators have trust problems. The NSA <a href="https://en.wikipedia.org/wiki/Dual_EC_DRBG">backdoored Dual_EC_DRBG</a> for seven years. <a href="https://www.debian.org/security/2008/dsa-1571">Debian's OpenSSL</a> generated breakable keys for 20 months. Intel's <a href="https://en.wikipedia.org/wiki/RDRAND">RDRAND is unauditable</a> silicon. Many devices — especially embedded systems, hardware wallets, and air-gapped machines — can't guarantee quality randomness at all.
+    <br><br>
+    The fix: trade randomness from mathematics on a deterministic system for something in the physical world. Dice under a blanket. You can <em>see</em> every roll. No firmware, no supply chain, no trust required.
+    <br><br>
+    <strong>Why "Ortolan"?</strong> The <a href="https://en.wikipedia.org/wiki/Ortolan_bunting#Culinary_use">ortolan bunting</a> is a small bird traditionally eaten under a napkin. This tool recommends generating your password under a blanket for visual privacy. The bird is now protected by the EU — please don't eat them.
+  </div>
+
+  <a href="entropy-test.html" class="tool-link">Test your dice or coins for fairness →</a>
 
   <!-- TABBED SECTIONS -->
   <div class="mode-tabs">
-    <div class="mode-tab active-coin" id="tabCoin" onclick="switchMode('coin')">Coin &nbsp;(256 flips)</div>
-    <div class="mode-tab" id="tabDice" onclick="switchMode('dice')">Dice &nbsp;(50 rolls of 2d6)</div>
+    <div class="mode-tab active-dice" id="tabDice" onclick="switchMode('dice')">Dice &nbsp;(50 rolls of 2d6)</div>
+    <div class="mode-tab" id="tabCoin" onclick="switchMode('coin')">Coin &nbsp;(256 flips)</div>
   </div>
 
   <!-- ===== COIN TAB ===== -->
-  <div class="mode-content active" id="contentCoin">
+  <div class="mode-content" id="contentCoin">
 
     <h2>Design — Coin</h2>
     <p>
@@ -207,7 +303,7 @@
       <br><br>
       <strong>Debian OpenSSL (2006–2008)</strong> — A well-intentioned code change to suppress a Valgrind warning removed
       two lines from OpenSSL's <code>md_rand.c</code>, reducing entropy from 128+ bits to ~15 bits (the process ID).
-      Every SSL/SSH key generated on Debian-based systems for 20 months was trivially breakable. CVE-2008-0166.
+      Every OpenSSL-generated SSL/SSH key on Debian-based systems for 20 months was trivially breakable. CVE-2008-0166.
       <br><br>
       <strong>Intel RDRAND</strong> — Processes raw entropy through on-chip AES-CBC-MAC whitening, making output
       fundamentally unauditable. Linux kernel developer Theodore Ts'o resisted pressure to rely on RDRAND alone.
@@ -368,11 +464,11 @@
       <strong>Coin bias: 50.8% same-side — negligible for key generation.</strong> &nbsp;Diaconis, Holmes &amp; Montgomery
       ("Dynamical Bias in the Coin Toss," <em>SIAM Review</em> 49(2), 2007) showed that human thumb-flips cause the coin to
       <em>precess</em> (wobble), spending slightly more flight time with the starting face up. They predicted P(same side) ≈ 0.51.
-      Bartoš et al. confirmed this empirically with <strong>350,757 flips</strong> by 48 people using 44 different coins
+      Bartoš et al. confirmed this empirically with <strong>350,757 flips</strong> by 48 people using 46 different currencies
       ("Fair coins tend to land on the same side they started," arXiv:2310.04153, 2023; <em>JASA</em> 2025):
       measured P(same side) = <strong>0.508</strong>, 95% CI [0.506, 0.509]. Crucially, P(heads) = 0.500, 95% CI [0.498, 0.502] —
       <strong>no coin denomination or country showed a heads-vs-tails bias when flipped</strong>.
-      The entropy cost of a 0.508 bias is ~0.00014 bits per flip, or <strong>0.036 bits over a full 256-flip sequence</strong> — completely negligible.
+      The entropy cost of a 0.508 bias is ~0.00019 bits per flip, or <strong>0.047 bits over a full 256-flip sequence</strong> — completely negligible.
     </div>
 
     <div class="security-note warning">
@@ -414,7 +510,7 @@
 
 
   <!-- ===== DICE TAB ===== -->
-  <div class="mode-content" id="contentDice">
+  <div class="mode-content active" id="contentDice">
 
     <h2>Design — Dice</h2>
     <p>
@@ -557,8 +653,8 @@
 
     <div class="security-note">
       <strong>Dice bias — negligible and unknowable to attackers.</strong> &nbsp;Store-bought dice have minor imperfections:
-      recessed pips shift the center of mass slightly toward the 6-face (fewer pips drilled out on the opposite 1-face),
-      and edges are rounded rather than sharp. Campbell &amp; Wimsatt (Western Kentucky University, 2019) found that detecting
+      recessed pips remove more material from the 6-face than the 1-face, shifting the center of mass toward the 1-face
+      (making 6 slightly more likely to land face-up). Campbell &amp; Dolan (Western Kentucky University, 2019) found that detecting
       whether a die is unfair requires ~3,000 rolls — and even then, most commodity d6 dice tested fair.
       <br><br>
       The key insight: <strong>an attacker doesn't know which dice you used or their specific bias</strong>. Each die's imperfections
@@ -583,7 +679,7 @@
     <div class="ref-section">
       <h3>Dice References</h3>
       <ol class="ref-list">
-        <li>Campbell, W. &amp; Wimsatt, H. (2019). Dice Testing with the Running Chi-Square Distribution. Western Kentucky University.</li>
+        <li>Campbell, W. &amp; Dolan, D. (2019). Dice Mythbusters. Western Kentucky University.</li>
         <li>Campbell, W., Miller, C., &amp; Simpson, X. (2023). Dice: Blessed or Cursed? Western Kentucky University.</li>
         <li>Gelman, A. &amp; Nolan, D. (2002). You Can Load a Die, But You Can't Bias a Coin. <em>The American Statistician</em>, 56(4), 308–311.</li>
       </ol>
@@ -596,13 +692,13 @@
   <h2>Shared Security Notes</h2>
 
   <div class="security-note warning">
-    <strong>Paper impressions — shred at least 8 pages.</strong> &nbsp;Forensic electrostatic detection (ESDA, first commercialized in 1978 by Foster &amp; Freeman) can recover pen indentations from up to <strong>7 sheets</strong> beneath the page you wrote on.
+    <strong>Paper impressions — shred at least 7 pages.</strong> &nbsp;Forensic electrostatic detection (ESDA, first commercialized in 1978 by Foster &amp; Freeman) can recover pen indentations from up to <strong>6 sheets</strong> beneath the page you wrote on.
     Seward's charge transport model (<em>J. Forensic Sciences</em>, 1999) explains the mechanism: paper-to-paper friction
     creates differential surface charges detectable by ESDA's corona wire. Under normal storage conditions,
     impressions can persist for decades.
     <br><br>
     <em>Best practice:</em> Write on a single loose sheet placed on a hard, non-porous surface (glass, hard clipboard).
-    If you used a notepad, tear out and destroy the <strong>first 8 pages</strong> beneath the writing sheet.
+    If you used a notepad, tear out and destroy the <strong>first 7 pages</strong> beneath the writing sheet.
     Oblique lighting reveals impressions 3–4 pages deep; ESDA goes to 7+.
     <br><br>
     <em>Destruction method:</em> Cross-cut shredding (DIN 66399 level P-4) is minimum.
@@ -653,14 +749,14 @@
     improved wordlists in 2016 (Joseph Bonneau). In the Bitcoin ecosystem, the Glacier Protocol, ColdCard, BlueWallet,
     and BitBox02 all support manual entropy input via dice or coins. David Vorick's "coins in a cup" method
     (Sia Foundation, 2020) uses modular arithmetic on five coins for entropy-preserving debiasing.
-    ICANN's DNSSEC Root Key Signing Ceremonies represent the gold standard for physical key management ritual.
+    The Glacier Protocol represents a thorough approach to physical key management.
   </div>
 
   <!-- SHARED REFERENCES -->
   <div class="ref-section">
     <h3>Shared References</h3>
     <ol class="ref-list">
-      <li>Seward, G.H. (1999). Practical Implications of Charge Transport Model for ESDA. <em>J. Forensic Sciences</em>, 45(2), 506.</li>
+      <li>Seward, G.H. (1999). Electrostatic Imaging of Paper Contours Using ESDA. <em>J. Forensic Sciences</em>, 44(4), 832–836.</li>
       <li>Vuagnoux, M. &amp; Pasini, S. (2009). Compromising Electromagnetic Emanations of Wired and Wireless Keyboards. USENIX Security.</li>
       <li>Guri, M., Zadov, B., &amp; Elovici, Y. (2020). ODINI: Escaping Sensitive Data from Faraday-Caged, Air-Gapped Computers via Magnetic Fields. <em>IEEE TIFS</em>, 15, 1190–1203.</li>
       <li>Reinhold, A. (1995). The Diceware Passphrase Home Page. theworld.com/~reinhold/diceware.html</li>

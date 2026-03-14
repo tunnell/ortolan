@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ortolan — Entropy Tester</title>
+<style>
+  @media print {
+    body { margin: 0.5in; font-size: 11pt; background: #fff; padding: 0; }
+    .no-print { display: none; }
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    color: #1a1a1a;
+    background: #f5f5f0;
+    padding: 2rem;
+    line-height: 1.55;
+  }
+  .container {
+    max-width: 820px;
+    margin: 0 auto;
+    background: #fff;
+    padding: 2.5rem 3rem;
+    border-radius: 6px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+  }
+  h1 { font-size: 1.6rem; font-weight: 700; color: #222; margin-bottom: 0.3rem; letter-spacing: -0.02em; }
+  .subtitle { font-size: 0.95rem; color: #666; margin-bottom: 1rem; }
+  h2 { font-size: 1.15rem; font-weight: 600; color: #333; margin: 1.8rem 0 0.7rem 0; }
+  h3 { font-size: 1.02rem; font-weight: 600; color: #555; margin: 1.4rem 0 0.5rem 0; }
+  p, li { font-size: 0.92rem; color: #333; }
+  p { margin-bottom: 0.6rem; }
+  code { font-family: 'SF Mono', 'Consolas', monospace; font-size: 0.88rem; background: #f5f5f0; padding: 0.15rem 0.4rem; border-radius: 3px; }
+
+  .nav-link {
+    display: inline-block;
+    font-size: 0.85rem;
+    color: #0d7377;
+    text-decoration: none;
+    padding: 0.4rem 0.8rem;
+    border: 1px solid #d0d8e0;
+    border-radius: 5px;
+    margin-bottom: 1.2rem;
+    transition: all 0.15s;
+  }
+  .nav-link:hover { background: #e8f4f4; border-color: #0d7377; }
+
+  .warning-box {
+    background: #fffbeb;
+    border: 1px solid #f0d070;
+    border-left: 4px solid #b45309;
+    border-radius: 5px;
+    padding: 1rem 1.2rem;
+    margin-bottom: 1.5rem;
+    font-size: 0.88rem;
+  }
+  .warning-box strong { color: #92400e; display: block; margin-bottom: 0.4rem; }
+
+  /* Tabs */
+  .mode-tabs { display: flex; gap: 0; margin: 0 0 0 0; border-bottom: 2px solid #e0e0e0; }
+  .mode-tab {
+    padding: 0.6rem 1.5rem; font-size: 0.92rem; font-weight: 600; cursor: pointer;
+    border: 2px solid transparent; border-bottom: none; border-radius: 6px 6px 0 0;
+    background: #f5f5f0; color: #888; margin-bottom: -2px; transition: all 0.15s;
+  }
+  .mode-tab:hover { color: #555; background: #ebe9e4; }
+  .mode-tab.active-dice { background: #fff; color: #1a4a6e; border-color: #e0e0e0; }
+  .mode-tab.active-coin { background: #fff; color: #2d5a27; border-color: #e0e0e0; }
+  .mode-content { display: none; padding-top: 1.5rem; }
+  .mode-content.active { display: block; }
+
+  /* Input section */
+  .input-section {
+    background: #fafaf8;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    padding: 1.2rem 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+  .input-section label {
+    display: block;
+    font-weight: 600;
+    font-size: 0.82rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #555;
+    margin-bottom: 0.6rem;
+  }
+  textarea {
+    width: 100%;
+    min-height: 80px;
+    background: #fff;
+    border: 1px solid #d0d0d0;
+    border-radius: 5px;
+    color: #1a1a1a;
+    font-family: 'SF Mono', 'Consolas', monospace;
+    font-size: 1rem;
+    letter-spacing: 0.08em;
+    padding: 0.8rem 1rem;
+    resize: vertical;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  textarea:focus { border-color: #0d7377; }
+  textarea::placeholder { color: #aaa; }
+  .input-hint { font-size: 0.78rem; color: #777; margin-top: 0.5rem; }
+  .live-count {
+    display: flex; gap: 1.5rem; margin-top: 0.8rem;
+    font-size: 0.82rem; color: #555;
+  }
+  .live-count b { color: #0d7377; font-weight: 600; }
+  .error-msg { color: #b91c1c; font-size: 0.82rem; margin-top: 0.5rem; display: none; }
+
+  /* Results */
+  .results { display: none; }
+  .results.visible { display: block; }
+
+  .card {
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    padding: 1.2rem 1.5rem;
+    margin-bottom: 1rem;
+  }
+  .card-title {
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #555;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #eee;
+  }
+
+  /* Frequency grid - Dice */
+  .freq-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+  }
+  .freq-cell {
+    background: #f5f5f0;
+    border: 1px solid #e0e0e0;
+    border-radius: 5px;
+    padding: 0.8rem 0.5rem;
+    text-align: center;
+  }
+  .freq-cell .face {
+    font-family: 'SF Mono', 'Consolas', monospace;
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #1a4a6e;
+  }
+  .freq-cell .count { font-size: 0.9rem; margin-top: 0.2rem; color: #333; }
+  .freq-cell .pct { font-size: 0.75rem; color: #777; }
+  .freq-bar { height: 4px; background: #e0e0e0; border-radius: 2px; margin-top: 0.4rem; overflow: hidden; }
+  .freq-bar-fill { height: 100%; background: #1a4a6e; border-radius: 2px; transition: width 0.3s; }
+
+  /* Frequency grid - Coin */
+  .freq-grid-coin {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.8rem;
+    margin-bottom: 1rem;
+    max-width: 300px;
+  }
+  .freq-cell-coin {
+    background: #f5f5f0;
+    border: 1px solid #e0e0e0;
+    border-radius: 5px;
+    padding: 1rem;
+    text-align: center;
+  }
+  .freq-cell-coin .face {
+    font-family: 'SF Mono', 'Consolas', monospace;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #2d5a27;
+  }
+  .freq-cell-coin .count { font-size: 1rem; margin-top: 0.3rem; color: #333; }
+  .freq-cell-coin .pct { font-size: 0.82rem; color: #777; }
+
+  /* Stats rows */
+  .stat-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.6rem 0;
+    border-bottom: 1px solid #f0f0f0;
+    font-size: 0.9rem;
+  }
+  .stat-row:last-child { border-bottom: none; }
+  .stat-row .label { color: #555; }
+  .stat-row .value { font-family: 'SF Mono', 'Consolas', monospace; font-weight: 600; color: #333; }
+
+  /* Verdict badges */
+  .verdict {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.5rem 1rem;
+    border-radius: 5px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    margin-top: 0.8rem;
+  }
+  .verdict.pass { background: #e6f7f0; color: #047857; border: 1px solid #a7f3d0; }
+  .verdict.fail { background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; }
+
+  /* Big numbers */
+  .big-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1.2rem; }
+  .big-cell {
+    background: #f5f5f0;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    padding: 1.2rem 1rem;
+    text-align: center;
+  }
+  .big-number {
+    font-family: 'SF Mono', 'Consolas', monospace;
+    font-size: 2rem;
+    font-weight: 700;
+    color: #0d7377;
+  }
+  .big-label { font-size: 0.78rem; color: #777; margin-top: 0.3rem; }
+
+  /* Entropy table */
+  .entropy-table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+  .entropy-table th {
+    font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em;
+    color: #777; text-align: left; padding: 0.5rem 0.6rem;
+    border-bottom: 2px solid #e0e0e0; font-weight: 600;
+  }
+  .entropy-table th:nth-child(n+2) { text-align: right; }
+  .entropy-table td { padding: 0.6rem; border-bottom: 1px solid #f0f0f0; }
+  .entropy-table td:nth-child(n+2) { text-align: right; font-family: 'SF Mono', 'Consolas', monospace; font-weight: 600; }
+  .entropy-table tr:last-child td { border-bottom: none; }
+  .entropy-table .highlight td { background: #e6f7f0; color: #047857; }
+
+  .method-note {
+    font-size: 0.78rem; color: #555; margin-top: 1rem; padding: 0.8rem 1rem;
+    background: #f5f5f0; border-radius: 5px; border-left: 3px solid #0d7377; line-height: 1.5;
+  }
+
+  /* Appendix */
+  .appendix { margin-top: 2.5rem; padding-top: 1.5rem; border-top: 1px solid #e0e0e0; }
+  .appendix h2 { color: #333; margin-bottom: 1rem; }
+  .appendix h3 { color: #0d7377; margin: 1.5rem 0 0.6rem 0; font-size: 0.95rem; }
+  .appendix p { font-size: 0.88rem; color: #555; line-height: 1.65; }
+  .formula-box {
+    background: #f5f5f0; border: 1px solid #e0e0e0; border-radius: 5px;
+    padding: 0.8rem 1rem; margin: 0.8rem 0;
+    font-family: 'SF Mono', 'Consolas', monospace; font-size: 0.9rem; color: #333;
+  }
+  .appendix ul { margin: 0.6rem 0 0.6rem 1.5rem; font-size: 0.88rem; color: #555; }
+  .appendix li { margin-bottom: 0.4rem; }
+
+  @media (max-width: 600px) {
+    .freq-grid { grid-template-columns: repeat(3, 1fr); }
+    .big-row { grid-template-columns: 1fr; }
+    .container { padding: 1.5rem; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>Ortolan :: Entropy Tester</h1>
+  <p class="subtitle">Test your dice or coins for fairness before generating a password.</p>
+
+  <a href="index.html" class="nav-link">&larr; Back to Password Generator</a>
+
+  <div class="warning-box">
+    <strong>Do not use these test rolls/flips for your actual password.</strong>
+    This tool verifies fairness <em>before</em> you generate a password. Even though all computation runs locally, using the same rolls introduces trust in your current device. Test with ~100 rolls/flips here, then generate your real password offline on paper.
+  </div>
+
+  <!-- Tabs -->
+  <div class="mode-tabs">
+    <div class="mode-tab active-dice" id="tabDice" onclick="switchMode('dice')">Dice</div>
+    <div class="mode-tab" id="tabCoin" onclick="switchMode('coin')">Coin</div>
+  </div>
+
+  <!-- ===== DICE TAB ===== -->
+  <div class="mode-content active" id="contentDice">
+    <div class="input-section">
+      <label>Dice rolls (digits 1–6)</label>
+      <textarea id="diceInput" placeholder="5 1 2 1 5 1 2 6 3 6 1 6 2 3 6 ..."></textarea>
+      <div class="input-hint">Enter digits 1-6 in any format. Other characters are ignored.</div>
+      <div id="diceError" class="error-msg"></div>
+      <div class="live-count">
+        <span>Rolls: <b id="diceCount">0</b></span>
+        <span>Fair-max entropy: <b id="diceFairMax">0</b> bits</span>
+      </div>
+    </div>
+
+    <div id="diceResults" class="results">
+      <div class="card">
+        <div class="card-title">Frequency Distribution</div>
+        <div class="freq-grid" id="diceFreqGrid"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Chi-Square Goodness-of-Fit</div>
+        <div class="stat-row"><span class="label">χ² statistic</span><span class="value" id="diceChi2Stat"></span></div>
+        <div class="stat-row"><span class="label">Degrees of freedom</span><span class="value">5</span></div>
+        <div class="stat-row"><span class="label">p-value</span><span class="value" id="diceChi2P"></span></div>
+        <div class="stat-row"><span class="label">Critical value (α = 0.05)</span><span class="value">11.070</span></div>
+        <div id="diceVerdict"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Entropy Estimates</div>
+        <div class="big-row">
+          <div class="big-cell">
+            <div class="big-number" id="diceBigShannon">—</div>
+            <div class="big-label">Shannon 95% worst-case</div>
+          </div>
+          <div class="big-cell">
+            <div class="big-number" id="diceBigMinEnt">—</div>
+            <div class="big-label">Min-entropy 95% worst-case</div>
+          </div>
+          <div class="big-cell">
+            <div class="big-number" id="diceBigFair">—</div>
+            <div class="big-label">Theoretical max (fair die)</div>
+          </div>
+        </div>
+        <table class="entropy-table">
+          <thead><tr><th>Method</th><th>bits/roll</th><th>Total bits</th><th>% of fair</th></tr></thead>
+          <tbody id="diceEntropyTable"></tbody>
+        </table>
+        <div class="method-note" id="diceMethodNote"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== COIN TAB ===== -->
+  <div class="mode-content" id="contentCoin">
+    <div class="input-section">
+      <label>Coin flips (H/T or 1/0)</label>
+      <textarea id="coinInput" placeholder="H T H H T T H T H T H H ..."></textarea>
+      <div class="input-hint">Enter H/T or 1/0 (1=Heads). Other characters are ignored.</div>
+      <div id="coinError" class="error-msg"></div>
+      <div class="live-count">
+        <span>Flips: <b id="coinCount">0</b></span>
+        <span>Fair-max entropy: <b id="coinFairMax">0</b> bits</span>
+      </div>
+    </div>
+
+    <div id="coinResults" class="results">
+      <div class="card">
+        <div class="card-title">Frequency Distribution</div>
+        <div class="freq-grid-coin" id="coinFreqGrid"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Binomial Test (Proportion)</div>
+        <div class="stat-row"><span class="label">Observed heads proportion</span><span class="value" id="coinProportion"></span></div>
+        <div class="stat-row"><span class="label">95% confidence interval</span><span class="value" id="coinCI"></span></div>
+        <div class="stat-row"><span class="label">Expected (fair coin)</span><span class="value">0.5000</span></div>
+        <div class="stat-row"><span class="label">p-value (two-tailed)</span><span class="value" id="coinBinomP"></span></div>
+        <div id="coinBinomVerdict"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Runs Test (Independence)</div>
+        <div class="stat-row"><span class="label">Number of runs</span><span class="value" id="coinRuns"></span></div>
+        <div class="stat-row"><span class="label">Expected runs</span><span class="value" id="coinExpectedRuns"></span></div>
+        <div class="stat-row"><span class="label">Z-statistic</span><span class="value" id="coinRunsZ"></span></div>
+        <div class="stat-row"><span class="label">p-value (two-tailed)</span><span class="value" id="coinRunsP"></span></div>
+        <div id="coinRunsVerdict"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Entropy Estimates</div>
+        <div class="big-row">
+          <div class="big-cell">
+            <div class="big-number" id="coinBigShannon">—</div>
+            <div class="big-label">Shannon entropy (bits)</div>
+          </div>
+          <div class="big-cell">
+            <div class="big-number" id="coinBigMinEnt">—</div>
+            <div class="big-label">Min-entropy 95% worst-case</div>
+          </div>
+          <div class="big-cell">
+            <div class="big-number" id="coinBigFair">—</div>
+            <div class="big-label">Theoretical max (fair coin)</div>
+          </div>
+        </div>
+        <div class="method-note">
+          <b>Shannon entropy</b> for coins is computed from observed proportions.<br>
+          <b>Min-entropy 95% worst-case</b> uses the Wilson upper bound on the more frequent outcome.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mathematical Appendix -->
+  <div class="appendix">
+    <h2>Mathematical Background</h2>
+
+    <h3>Chi-Square Goodness-of-Fit (Dice)</h3>
+    <p>Measures whether observed frequencies differ significantly from expected frequencies. For a fair die, each face should appear with probability 1/6.</p>
+    <div class="formula-box">χ² = Σ (Oᵢ - Eᵢ)² / Eᵢ</div>
+    <p>With 6 faces, we have 5 degrees of freedom. The critical value at α = 0.05 is 11.07.</p>
+
+    <h3>Binomial Test (Coins)</h3>
+    <p>Tests whether the proportion of heads differs significantly from 0.5. Uses the exact binomial distribution for small samples and normal approximation for larger ones.</p>
+    <div class="formula-box">p-value = 2 × P(X ≥ |observed - expected|)</div>
+
+    <h3>Runs Test (Independence)</h3>
+    <p>Detects non-random patterns in a sequence. A "run" is a consecutive sequence of the same outcome (e.g., HHH or TT).</p>
+    <div class="formula-box">
+      E[R] = (2n₁n₂)/(n₁+n₂) + 1<br>
+      σ²[R] = (2n₁n₂(2n₁n₂-n₁-n₂)) / ((n₁+n₂)²(n₁+n₂-1))
+    </div>
+    <p>A very low number of runs suggests clustering; a very high number suggests alternation. Both indicate non-randomness.</p>
+
+    <h3>Wilson Confidence Interval</h3>
+    <p>More accurate than the normal approximation for proportions, especially with small samples or extreme proportions:</p>
+    <div class="formula-box">p̂ᵤₚₚₑᵣ = (p̂ + z²/2n + z√(p̂(1-p̂)/n + z²/4n²)) / (1 + z²/n)</div>
+
+    <h3>How Many Rolls/Flips Do I Need?</h3>
+    <p><strong>I recommend ~100.</strong> This provides good statistical power for detecting meaningful bias.</p>
+    <ul>
+      <li><strong>~60:</strong> Detect gross bias (30%+ deviation)</li>
+      <li><strong>~100:</strong> Good power for moderate bias (recommended)</li>
+      <li><strong>~300+:</strong> Detect subtle bias (~20% deviation)</li>
+    </ul>
+
+    <h3>References</h3>
+    <ul>
+      <li>Campbell, W. & Dolan, D. (2019). Dice Mythbusters. Western Kentucky University.</li>
+      <li>Bartoš, F. et al. (2023). Fair coins tend to land on the same side they started. arXiv:2310.04153.</li>
+      <li>Wilson, E.B. (1927). Probable Inference, the Law of Succession, and Statistical Inference. JASA.</li>
+    </ul>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════
+// Shared Math Functions
+// ══════════════════════════════════════════════════
+
+function lnGamma(z) {
+  const g = 7;
+  const c = [0.99999999999980993, 676.5203681218851, -1259.1392167224028,
+    771.32342877765313, -176.61502916214059, 12.507343278686905,
+    -0.13857109526572012, 9.9843695780195716e-6, 1.5056327351493116e-7];
+  if (z < 0.5) return Math.log(Math.PI / Math.sin(Math.PI * z)) - lnGamma(1 - z);
+  z -= 1;
+  let x = c[0];
+  for (let i = 1; i < g + 2; i++) x += c[i] / (z + i);
+  const t = z + g + 0.5;
+  return 0.5 * Math.log(2 * Math.PI) + (z + 0.5) * Math.log(t) - t + Math.log(x);
+}
+
+function gammaincUpper(a, x) {
+  if (x < 0) return 1;
+  let f = x + 1 - a;
+  if (Math.abs(f) < 1e-30) f = 1e-30;
+  let c = f, d = 0;
+  for (let i = 1; i < 300; i++) {
+    const ai = i * (a - i), bi = x + 2 * i + 1 - a;
+    d = bi + ai * d; if (Math.abs(d) < 1e-30) d = 1e-30;
+    c = bi + ai / c; if (Math.abs(c) < 1e-30) c = 1e-30;
+    d = 1 / d;
+    const delta = c * d;
+    f *= delta;
+    if (Math.abs(delta - 1) < 1e-14) break;
+  }
+  return Math.exp(-x + a * Math.log(x) - lnGamma(a)) / f;
+}
+
+function gammainc(a, x) {
+  if (x <= 0) return 0;
+  if (x < a + 1) {
+    let sum = 1 / a, term = 1 / a;
+    for (let n = 1; n < 300; n++) {
+      term *= x / (a + n); sum += term;
+      if (Math.abs(term) < Math.abs(sum) * 1e-14) break;
+    }
+    return sum * Math.exp(-x + a * Math.log(x) - lnGamma(a));
+  }
+  return 1 - gammaincUpper(a, x);
+}
+
+function chi2cdf(x, k) { return x <= 0 ? 0 : gammainc(k / 2, x / 2); }
+
+function normCdf(z) {
+  const a1 = 0.254829592, a2 = -0.284496736, a3 = 1.421413741, a4 = -1.453152027, a5 = 1.061405429, p = 0.3275911;
+  const sign = z < 0 ? -1 : 1;
+  z = Math.abs(z) / Math.sqrt(2);
+  const t = 1.0 / (1.0 + p * z);
+  const y = 1.0 - (((((a5 * t + a4) * t) + a3) * t + a2) * t + a1) * t * Math.exp(-z * z);
+  return 0.5 * (1.0 + sign * y);
+}
+
+function wilsonInterval(successes, n, z) {
+  const p = successes / n;
+  const denom = 1 + z * z / n;
+  const center = (p + z * z / (2 * n)) / denom;
+  const margin = z * Math.sqrt(p * (1 - p) / n + z * z / (4 * n * n)) / denom;
+  return { lower: center - margin, upper: center + margin };
+}
+
+// ══════════════════════════════════════════════════
+// Dice Analysis
+// ══════════════════════════════════════════════════
+
+function analyzeDice(rolls) {
+  const n = rolls.length;
+  const H_FAIR = Math.log2(6);
+  const counts = [0, 0, 0, 0, 0, 0];
+  for (const r of rolls) counts[r - 1]++;
+  const phat = counts.map(c => c / n);
+  const expected = n / 6;
+
+  let chi2 = 0;
+  for (let i = 0; i < 6; i++) chi2 += Math.pow(counts[i] - expected, 2) / expected;
+  const pValue = 1 - chi2cdf(chi2, 5);
+
+  let H_mle = 0;
+  for (const p of phat) if (p > 0) H_mle -= p * Math.log2(p);
+
+  const pMax = Math.max(...phat);
+  const H_min_mle = -Math.log2(pMax);
+
+  const maxCount = Math.max(...counts);
+  const pMaxUpper95 = wilsonInterval(maxCount, n, 1.96).upper;
+  const H_min_worst95 = -Math.log2(Math.min(pMaxUpper95, 0.999));
+
+  // Simplified Shannon worst-case (use min-entropy based approximation)
+  const shannonWorst95 = Math.max(H_mle - 0.1, H_min_worst95);
+
+  return { n, counts, phat, chi2, pValue, H_FAIR, H_mle, H_min_mle, H_min_worst95, pMaxUpper95, shannonWorst95 };
+}
+
+function renderDiceResults(r) {
+  const grid = document.getElementById('diceFreqGrid');
+  grid.innerHTML = '';
+  const maxCount = Math.max(...r.counts);
+  for (let i = 0; i < 6; i++) {
+    const pct = (r.counts[i] / r.n * 100).toFixed(1);
+    grid.innerHTML += `<div class="freq-cell">
+      <div class="face">${i + 1}</div>
+      <div class="count">${r.counts[i]}</div>
+      <div class="pct">${pct}%</div>
+      <div class="freq-bar"><div class="freq-bar-fill" style="width:${r.counts[i] / maxCount * 100}%"></div></div>
+    </div>`;
+  }
+
+  document.getElementById('diceChi2Stat').textContent = r.chi2.toFixed(4);
+  document.getElementById('diceChi2P').textContent = r.pValue.toFixed(4);
+  document.getElementById('diceVerdict').innerHTML = r.pValue >= 0.05
+    ? '<div class="verdict pass">✓ PASS — No evidence of bias</div>'
+    : '<div class="verdict fail">✗ FAIL — Significant bias detected</div>';
+
+  document.getElementById('diceBigShannon').textContent = (r.shannonWorst95 * r.n).toFixed(0);
+  document.getElementById('diceBigMinEnt').textContent = (r.H_min_worst95 * r.n).toFixed(0);
+  document.getElementById('diceBigFair').textContent = (r.H_FAIR * r.n).toFixed(0);
+
+  const rows = [
+    { label: 'Fair die (theoretical max)', h: r.H_FAIR, cls: '' },
+    { label: 'MLE (observed)', h: r.H_mle, cls: '' },
+    { label: 'Shannon 95% worst-case', h: r.shannonWorst95, cls: 'highlight' },
+    { label: 'Min-entropy 95% worst-case', h: r.H_min_worst95, cls: 'highlight' },
+  ];
+  document.getElementById('diceEntropyTable').innerHTML = rows.map(row =>
+    `<tr class="${row.cls}"><td>${row.label}</td><td>${row.h.toFixed(4)}</td><td>${(row.h * r.n).toFixed(1)}</td><td>${(row.h / r.H_FAIR * 100).toFixed(1)}%</td></tr>`
+  ).join('');
+
+  document.getElementById('diceMethodNote').innerHTML =
+    '<b>Shannon 95% worst-case</b> is a conservative entropy estimate. <b>Min-entropy</b> uses Wilson upper bound on the most frequent face.';
+}
+
+// ══════════════════════════════════════════════════
+// Coin Analysis
+// ══════════════════════════════════════════════════
+
+function analyzeCoin(flips) {
+  const n = flips.length;
+  const heads = flips.filter(f => f === 1).length;
+  const tails = n - heads;
+  const pHat = heads / n;
+
+  // Wilson CI
+  const ci = wilsonInterval(heads, n, 1.96);
+
+  // Binomial test (normal approximation for n >= 20)
+  const z = (heads - n * 0.5) / Math.sqrt(n * 0.25);
+  const binomP = 2 * (1 - normCdf(Math.abs(z)));
+
+  // Runs test
+  let runs = 1;
+  for (let i = 1; i < n; i++) if (flips[i] !== flips[i - 1]) runs++;
+  const expectedRuns = (2 * heads * tails) / n + 1;
+  const varianceRuns = (2 * heads * tails * (2 * heads * tails - n)) / (n * n * (n - 1));
+  const runsZ = (runs - expectedRuns) / Math.sqrt(varianceRuns);
+  const runsP = 2 * (1 - normCdf(Math.abs(runsZ)));
+
+  // Entropy
+  const H_mle = pHat > 0 && pHat < 1 ? -pHat * Math.log2(pHat) - (1 - pHat) * Math.log2(1 - pHat) : 0;
+  const pMaxUpper = Math.max(ci.upper, 1 - ci.lower);
+  const H_min_worst = -Math.log2(Math.min(pMaxUpper, 0.999));
+
+  return { n, heads, tails, pHat, ci, binomP, runs, expectedRuns, runsZ, runsP, H_mle, H_min_worst };
+}
+
+function renderCoinResults(r) {
+  document.getElementById('coinFreqGrid').innerHTML = `
+    <div class="freq-cell-coin"><div class="face">H</div><div class="count">${r.heads}</div><div class="pct">${(r.heads / r.n * 100).toFixed(1)}%</div></div>
+    <div class="freq-cell-coin"><div class="face">T</div><div class="count">${r.tails}</div><div class="pct">${(r.tails / r.n * 100).toFixed(1)}%</div></div>
+  `;
+
+  document.getElementById('coinProportion').textContent = r.pHat.toFixed(4);
+  document.getElementById('coinCI').textContent = `[${r.ci.lower.toFixed(4)}, ${r.ci.upper.toFixed(4)}]`;
+  document.getElementById('coinBinomP').textContent = r.binomP.toFixed(4);
+  document.getElementById('coinBinomVerdict').innerHTML = r.binomP >= 0.05
+    ? '<div class="verdict pass">✓ PASS — No evidence of bias</div>'
+    : '<div class="verdict fail">✗ FAIL — Significant proportion bias</div>';
+
+  document.getElementById('coinRuns').textContent = r.runs;
+  document.getElementById('coinExpectedRuns').textContent = r.expectedRuns.toFixed(1);
+  document.getElementById('coinRunsZ').textContent = r.runsZ.toFixed(3);
+  document.getElementById('coinRunsP').textContent = r.runsP.toFixed(4);
+  document.getElementById('coinRunsVerdict').innerHTML = r.runsP >= 0.05
+    ? '<div class="verdict pass">✓ PASS — No evidence of patterns</div>'
+    : '<div class="verdict fail">✗ FAIL — Non-random pattern detected</div>';
+
+  document.getElementById('coinBigShannon').textContent = (r.H_mle * r.n).toFixed(0);
+  document.getElementById('coinBigMinEnt').textContent = (r.H_min_worst * r.n).toFixed(0);
+  document.getElementById('coinBigFair').textContent = r.n;
+}
+
+// ══════════════════════════════════════════════════
+// UI
+// ══════════════════════════════════════════════════
+
+function switchMode(mode) {
+  document.getElementById('contentDice').classList.remove('active');
+  document.getElementById('contentCoin').classList.remove('active');
+  document.getElementById('tabDice').classList.remove('active-dice');
+  document.getElementById('tabCoin').classList.remove('active-coin');
+  if (mode === 'dice') {
+    document.getElementById('contentDice').classList.add('active');
+    document.getElementById('tabDice').classList.add('active-dice');
+  } else {
+    document.getElementById('contentCoin').classList.add('active');
+    document.getElementById('tabCoin').classList.add('active-coin');
+  }
+}
+
+// Dice input
+const diceInput = document.getElementById('diceInput');
+let diceTimer;
+diceInput.addEventListener('input', () => {
+  clearTimeout(diceTimer);
+  diceTimer = setTimeout(() => {
+    const rolls = diceInput.value.replace(/[^1-6]/g, '').split('').map(Number);
+    document.getElementById('diceCount').textContent = rolls.length;
+    document.getElementById('diceFairMax').textContent = (rolls.length * Math.log2(6)).toFixed(1);
+    if (rolls.length >= 6) {
+      const r = analyzeDice(rolls);
+      renderDiceResults(r);
+      document.getElementById('diceResults').classList.add('visible');
+    } else {
+      document.getElementById('diceResults').classList.remove('visible');
+    }
+  }, 300);
+});
+
+// Coin input
+const coinInput = document.getElementById('coinInput');
+let coinTimer;
+coinInput.addEventListener('input', () => {
+  clearTimeout(coinTimer);
+  coinTimer = setTimeout(() => {
+    const text = coinInput.value.toUpperCase();
+    const flips = [];
+    for (const ch of text) {
+      if (ch === 'H' || ch === '1') flips.push(1);
+      else if (ch === 'T' || ch === '0') flips.push(0);
+    }
+    document.getElementById('coinCount').textContent = flips.length;
+    document.getElementById('coinFairMax').textContent = flips.length;
+    if (flips.length >= 10) {
+      const r = analyzeCoin(flips);
+      renderCoinResults(r);
+      document.getElementById('coinResults').classList.add('visible');
+    } else {
+      document.getElementById('coinResults').classList.remove('visible');
+    }
+  }, 300);
+});
+</script>
+</body>
+</html>
