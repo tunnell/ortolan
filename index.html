@@ -277,7 +277,8 @@
 
     <h2>Design — Coin</h2>
     <p>
-      The alphabet is <strong>32 characters</strong>: the 26 lowercase letters <code>a–z</code> plus 6 digits <code>0–5</code>.
+      The alphabet is <strong>32 characters</strong>: the digits <code>0–9</code> plus 22 lowercase letters, excluding <code>i</code>, <code>l</code>, <code>o</code>, <code>u</code> (Crockford's Base32).
+      The exclusions make handwriting self-correcting: anything that reads as <code>i</code>/<code>l</code>/<code>1</code> is <code>1</code>, anything that reads as <code>o</code>/<code>0</code> is <code>0</code>. Keep <code>5</code>/<code>s</code> and <code>2</code>/<code>z</code> distinct when writing.
       Since 2<sup>5</sup>&nbsp;=&nbsp;32, every group of <strong>5 flips</strong> maps to exactly one character with zero waste.
       The final character uses a 1-bit table. A literal <code>.</code> is inserted every 5 characters for readability — dots carry no entropy but can be left in the password.
     </p>
@@ -319,38 +320,38 @@
       <h2>Table A — 5-Bit Lookup</h2>
       <div class="lookup-grid">
         <div class="header">Binary → Char</div><div class="header">Binary → Char</div><div class="header">Binary → Char</div><div class="header">Binary → Char</div>
-        <div class="cell"><span class="binary">00000</span><span class="arrow">→</span><span class="char">a</span></div>
-        <div class="cell"><span class="binary">01000</span><span class="arrow">→</span><span class="char">i</span></div>
-        <div class="cell"><span class="binary">10000</span><span class="arrow">→</span><span class="char">q</span></div>
-        <div class="cell"><span class="binary">11000</span><span class="arrow">→</span><span class="char">y</span></div>
-        <div class="cell"><span class="binary">00001</span><span class="arrow">→</span><span class="char">b</span></div>
-        <div class="cell"><span class="binary">01001</span><span class="arrow">→</span><span class="char">j</span></div>
-        <div class="cell"><span class="binary">10001</span><span class="arrow">→</span><span class="char">r</span></div>
-        <div class="cell"><span class="binary">11001</span><span class="arrow">→</span><span class="char">z</span></div>
-        <div class="cell"><span class="binary">00010</span><span class="arrow">→</span><span class="char">c</span></div>
-        <div class="cell"><span class="binary">01010</span><span class="arrow">→</span><span class="char">k</span></div>
-        <div class="cell"><span class="binary">10010</span><span class="arrow">→</span><span class="char">s</span></div>
-        <div class="cell"><span class="binary">11010</span><span class="arrow">→</span><span class="char">0</span></div>
-        <div class="cell"><span class="binary">00011</span><span class="arrow">→</span><span class="char">d</span></div>
-        <div class="cell"><span class="binary">01011</span><span class="arrow">→</span><span class="char">l</span></div>
-        <div class="cell"><span class="binary">10011</span><span class="arrow">→</span><span class="char">t</span></div>
-        <div class="cell"><span class="binary">11011</span><span class="arrow">→</span><span class="char">1</span></div>
-        <div class="cell"><span class="binary">00100</span><span class="arrow">→</span><span class="char">e</span></div>
-        <div class="cell"><span class="binary">01100</span><span class="arrow">→</span><span class="char">m</span></div>
-        <div class="cell"><span class="binary">10100</span><span class="arrow">→</span><span class="char">u</span></div>
-        <div class="cell"><span class="binary">11100</span><span class="arrow">→</span><span class="char">2</span></div>
-        <div class="cell"><span class="binary">00101</span><span class="arrow">→</span><span class="char">f</span></div>
-        <div class="cell"><span class="binary">01101</span><span class="arrow">→</span><span class="char">n</span></div>
-        <div class="cell"><span class="binary">10101</span><span class="arrow">→</span><span class="char">v</span></div>
-        <div class="cell"><span class="binary">11101</span><span class="arrow">→</span><span class="char">3</span></div>
-        <div class="cell"><span class="binary">00110</span><span class="arrow">→</span><span class="char">g</span></div>
-        <div class="cell"><span class="binary">01110</span><span class="arrow">→</span><span class="char">o</span></div>
-        <div class="cell"><span class="binary">10110</span><span class="arrow">→</span><span class="char">w</span></div>
-        <div class="cell"><span class="binary">11110</span><span class="arrow">→</span><span class="char">4</span></div>
-        <div class="cell"><span class="binary">00111</span><span class="arrow">→</span><span class="char">h</span></div>
-        <div class="cell"><span class="binary">01111</span><span class="arrow">→</span><span class="char">p</span></div>
-        <div class="cell"><span class="binary">10111</span><span class="arrow">→</span><span class="char">x</span></div>
-        <div class="cell"><span class="binary">11111</span><span class="arrow">→</span><span class="char">5</span></div>
+        <div class="cell"><span class="binary">00000</span><span class="arrow">→</span><span class="char">0</span></div>
+        <div class="cell"><span class="binary">01000</span><span class="arrow">→</span><span class="char">8</span></div>
+        <div class="cell"><span class="binary">10000</span><span class="arrow">→</span><span class="char">g</span></div>
+        <div class="cell"><span class="binary">11000</span><span class="arrow">→</span><span class="char">r</span></div>
+        <div class="cell"><span class="binary">00001</span><span class="arrow">→</span><span class="char">1</span></div>
+        <div class="cell"><span class="binary">01001</span><span class="arrow">→</span><span class="char">9</span></div>
+        <div class="cell"><span class="binary">10001</span><span class="arrow">→</span><span class="char">h</span></div>
+        <div class="cell"><span class="binary">11001</span><span class="arrow">→</span><span class="char">s</span></div>
+        <div class="cell"><span class="binary">00010</span><span class="arrow">→</span><span class="char">2</span></div>
+        <div class="cell"><span class="binary">01010</span><span class="arrow">→</span><span class="char">a</span></div>
+        <div class="cell"><span class="binary">10010</span><span class="arrow">→</span><span class="char">j</span></div>
+        <div class="cell"><span class="binary">11010</span><span class="arrow">→</span><span class="char">t</span></div>
+        <div class="cell"><span class="binary">00011</span><span class="arrow">→</span><span class="char">3</span></div>
+        <div class="cell"><span class="binary">01011</span><span class="arrow">→</span><span class="char">b</span></div>
+        <div class="cell"><span class="binary">10011</span><span class="arrow">→</span><span class="char">k</span></div>
+        <div class="cell"><span class="binary">11011</span><span class="arrow">→</span><span class="char">v</span></div>
+        <div class="cell"><span class="binary">00100</span><span class="arrow">→</span><span class="char">4</span></div>
+        <div class="cell"><span class="binary">01100</span><span class="arrow">→</span><span class="char">c</span></div>
+        <div class="cell"><span class="binary">10100</span><span class="arrow">→</span><span class="char">m</span></div>
+        <div class="cell"><span class="binary">11100</span><span class="arrow">→</span><span class="char">w</span></div>
+        <div class="cell"><span class="binary">00101</span><span class="arrow">→</span><span class="char">5</span></div>
+        <div class="cell"><span class="binary">01101</span><span class="arrow">→</span><span class="char">d</span></div>
+        <div class="cell"><span class="binary">10101</span><span class="arrow">→</span><span class="char">n</span></div>
+        <div class="cell"><span class="binary">11101</span><span class="arrow">→</span><span class="char">x</span></div>
+        <div class="cell"><span class="binary">00110</span><span class="arrow">→</span><span class="char">6</span></div>
+        <div class="cell"><span class="binary">01110</span><span class="arrow">→</span><span class="char">e</span></div>
+        <div class="cell"><span class="binary">10110</span><span class="arrow">→</span><span class="char">p</span></div>
+        <div class="cell"><span class="binary">11110</span><span class="arrow">→</span><span class="char">y</span></div>
+        <div class="cell"><span class="binary">00111</span><span class="arrow">→</span><span class="char">7</span></div>
+        <div class="cell"><span class="binary">01111</span><span class="arrow">→</span><span class="char">f</span></div>
+        <div class="cell"><span class="binary">10111</span><span class="arrow">→</span><span class="char">q</span></div>
+        <div class="cell"><span class="binary">11111</span><span class="arrow">→</span><span class="char">z</span></div>
       </div>
     </div>
 
@@ -358,8 +359,8 @@
       <h2 style="margin-top:0.5rem;">Table B — 1-Bit (final character)</h2>
       <div class="one-bit-grid">
         <div class="header">Binary → Char</div><div class="header">Binary → Char</div>
-        <div class="cell"><span class="binary">0</span><span class="arrow">→</span><span class="char">a</span></div>
-        <div class="cell"><span class="binary">1</span><span class="arrow">→</span><span class="char">b</span></div>
+        <div class="cell"><span class="binary">0</span><span class="arrow">→</span><span class="char">0</span></div>
+        <div class="cell"><span class="binary">1</span><span class="arrow">→</span><span class="char">1</span></div>
       </div>
     </div>
 
@@ -368,8 +369,8 @@
       <div class="label">Worked Example (first 3 characters from 15 flips)</div>
       <code>Flips: T H T T H &nbsp;|&nbsp; H H T H T &nbsp;|&nbsp; T H H T H</code><br>
       <code>Bits: &nbsp;0 1 0 0 1 &nbsp;|&nbsp; 1 1 0 1 0 &nbsp;|&nbsp; 0 1 1 0 1</code><br>
-      <code>Lookup: 01001→j &nbsp;&nbsp; 11010→0 &nbsp;&nbsp; 01101→n</code><br>
-      <div class="result result-green">j 0 n . . .</div>
+      <code>Lookup: 01001→9 &nbsp;&nbsp; 11010→t &nbsp;&nbsp; 01101→d</code><br>
+      <div class="result result-green">9 t d . . .</div>
     </div>
 
     <h2>Procedure — Coin</h2>
@@ -453,7 +454,7 @@
         __ __ __ __ __<span class="dot"> . </span>__ __ __ __ __<span class="dot"> . </span>__ __ __ __ __<span class="dot"> . </span>__ __ __ __ __<span class="dot"> . </span>__ __ __ __ __<span class="dot"> . </span>__ __
       </div>
       <span style="font-size:0.82rem; color:#888; display:block; margin-top:0.5rem;">
-        52 characters in 10 groups of 5 + 2 &nbsp;|&nbsp; Alphabet: a–z 0–5 (32 symbols)
+        52 characters in 10 groups of 5 + 2 &nbsp;|&nbsp; Alphabet: 0–9 a–z without i&nbsp;l&nbsp;o&nbsp;u (32 symbols)
       </span>
     </div>
 
@@ -525,6 +526,7 @@
     </table>
 
     <p class="convention">Always roll two dice together. First die = row, second die = column (or use different colors).</p>
+    <p class="convention">Handwriting: this alphabet keeps the classic look-alikes (<code>0</code>/<code>o</code>, <code>1</code>/<code>l</code>, <code>5</code>/<code>s</code>, <code>2</code>/<code>z</code>). Slash your zeros, cross your sevens, and give <code>1</code> a base so it can't be read as <code>l</code>.</p>
 
     <h2>Why Dice?</h2>
     <p>

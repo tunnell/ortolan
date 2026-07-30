@@ -7,9 +7,9 @@ A printable reference card for generating a 256-bit password from dice rolls or 
 | Method | Actions | Password | Entropy | Alphabet |
 |--------|---------|----------|---------|----------|
 | Dice | 50 rolls of 2d6 | 50 characters | 258.5 bits | a–z, 0–9 (36 chars) |
-| Coin | 256 flips | 52 characters | 256 bits | a–z, 0–5 (32 chars) |
+| Coin | 256 flips | 52 characters | 256 bits | Crockford Base32 (32 chars) |
 
-Both encodings are zero-waste bijections: each roll of two dice maps onto one of 36 characters (6 × 6), each group of five coin flips onto one of 32 (2⁵). Everything happens on paper, and the mapping is simple enough to check by hand. No computer touches the key until you type it in.
+Both encodings are zero-waste bijections: each roll of two dice maps onto one of 36 characters (6 × 6), each group of five coin flips onto one of 32 (2⁵). The coin alphabet is Crockford's Base32, which drops i, l, o, and u so a handwritten key can't be misread. Everything happens on paper, and the mapping is simple enough to check by hand. No computer touches the key until you type it in.
 
 ## Usage
 
