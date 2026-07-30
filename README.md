@@ -2,7 +2,7 @@
 
 A printable reference card for generating a 256-bit password from dice rolls or coin flips. No electronics, no software RNG, no trust required.
 
-**[Use it here](https://tunnell.github.io/ortolan/)**, or print it. The page works offline.
+**[Use it here](https://tunnell.github.io/ortolan/)**, or print it. The page works offline: check the source, disconnect, then generate your password.
 
 | Method | Actions | Password | Entropy | Alphabet |
 |--------|---------|----------|---------|----------|
