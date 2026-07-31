@@ -26,6 +26,7 @@
     .lookup-grid .cell .char, .dice-grid .cell .char, .one-bit-grid .cell .char { background: #eee !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     /* Hide non-essential for printing */
     .security-note, .rationale, .ref-section { font-size: 0.75rem; }
+    .checklist { font-size: 0.85rem; border: 2px solid #000; }
     .mode-tabs { margin-top: 0; }
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -74,6 +75,8 @@
   }
   .steps-green li::before { background: #2d5a27; color: #fff; }
   .steps-blue li::before { background: #1a4a6e; color: #fff; }
+  .steps-green li.verify-step::before { background: #fff; color: #2d5a27; box-shadow: inset 0 0 0 2px #2d5a27; }
+  .steps-blue li.verify-step::before { background: #fff; color: #1a4a6e; box-shadow: inset 0 0 0 2px #1a4a6e; }
   .steps li strong { color: #222; }
 
   .table-section { margin: 1.5rem 0; }
@@ -238,6 +241,13 @@
     background: #e8f0f6;
     border-color: #1a4a6e;
   }
+
+  .checklist { background: #fafaf7; border: 1px solid #c9a227; border-radius: 5px; padding: 1rem 1.2rem; margin: 0.8rem 0 1rem 0; font-size: 0.88rem; }
+  .checklist .label { font-weight: 600; color: #555; font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 0.5rem; }
+  .checklist ul { list-style: none; margin: 0; padding: 0; }
+  .checklist li { padding: 0.3rem 0 0.3rem 1.7rem; position: relative; }
+  .checklist li::before { content: "\2610"; position: absolute; left: 0.2rem; top: 0.25rem; color: #888; font-size: 1rem; }
+  .phase-note { font-size: 0.85rem; color: #777; font-style: italic; margin: 0.4rem 0 1rem 0; }
 </style>
 </head>
 <body>
@@ -246,7 +256,7 @@
   <div class="header-row">
     <div class="header-text">
       <h1>Ortolan</h1>
-      <p class="subtitle">Generate verifiably random 256-bit keys using dice (or coins) — no electronics, no software RNG, no trust required</p>
+      <p class="subtitle">Generate auditable 256-bit keys using dice (or coins) — no electronics, no software RNG, no trust required until you type it in</p>
     </div>
     <div class="header-bird">
       <img src="ortolan.jpg" alt="Ortolan bunting">
@@ -259,12 +269,93 @@
   <div class="ortolan-note">
     <strong>Why physical randomness?</strong> Digital random number generators have trust problems. The NSA <a href="https://en.wikipedia.org/wiki/Dual_EC_DRBG">backdoored Dual_EC_DRBG</a> for seven years. <a href="https://www.debian.org/security/2008/dsa-1571">Debian's OpenSSL</a> generated breakable keys for 20 months. Intel's <a href="https://en.wikipedia.org/wiki/RDRAND">RDRAND is unauditable</a> silicon. Many devices — especially embedded systems, hardware wallets, and air-gapped machines — can't guarantee quality randomness at all.
     <br><br>
-    The fix: trade randomness from mathematics on a deterministic system for something in the physical world. Dice under a blanket. You can <em>see</em> every roll. No firmware, no supply chain, no trust required.
+    The fix: trade randomness from mathematics on a deterministic system for something in the physical world. Dice under a blanket. You can <em>see</em> every roll. No firmware, no supply chain — while you generate, nothing to trust but physics.
     <br><br>
     <strong>Why "Ortolan"?</strong> The <a href="https://en.wikipedia.org/wiki/Ortolan_bunting#Culinary_use">ortolan bunting</a> is a small bird traditionally eaten under a napkin. This tool recommends generating your password under a blanket for visual privacy. The bird is now protected by the EU — please don't eat them.
   </div>
 
   <a href="entropy-test.html" class="tool-link">Test your dice or coins for fairness →</a>
+
+  <h2>What This Is For</h2>
+  <p>
+    Keys that face offline attack and live for years: full-disk encryption, a password manager's master password,
+    a wallet seed. For those, eliminating RNG trust is worth half an hour, and 256 bits — NIST's recommendation
+    for long-term sensitive data — holds about 128 against Grover's quantum algorithm. It is the wrong tool for
+    website logins: rate-limited services don't reward this much entropy, and some will truncate or reject a
+    50-plus-character password. The assumed attacker can backdoor RNGs, watch and listen from a distance, and seize your hardware
+    later — but does not already control the machine you will type into. If they do, no password scheme survives;
+    see phase 4.
+  </p>
+
+  <h2>The Ceremony</h2>
+  <table class="summary-table">
+    <tr><th>#</th><th>Phase</th><th>You are trusting</th></tr>
+    <tr><td>1</td><td>Prepare the room</td><td>The sweep you just did</td></tr>
+    <tr><td>2</td><td>Generate</td><td>Physics, your own dice, your own eyes</td></tr>
+    <tr><td>3</td><td>Verify</td><td>Your eyes, a second time</td></tr>
+    <tr><td>4</td><td>Enter</td><td>Keyboard, OS, and software — same as any password</td></tr>
+    <tr><td>5</td><td>Prove it works</td><td>The same machine, once more</td></tr>
+    <tr><td>6</td><td>Keep &amp; destroy</td><td>A safe and a shredder</td></tr>
+  </table>
+  <p>
+    Phase 2 is the only row whose every entry is in front of your eyes: generation is observable and checkable by
+    hand, which is the property no digital RNG can offer. A third party still can't verify your rolls — only you,
+    watching them, can — so this card says <em>auditable</em>, not <em>verifiably random</em>. The other rows are
+    where your trust actually goes; the security boundary is all six of them (Ellison 2007), and the card walks
+    them in order.
+  </p>
+
+  <h2>Why Not a Computer?</h2>
+  <p>
+    Every digital random number generator you might use instead — <code>/dev/urandom</code>, Intel's RDRAND instruction,
+    a hardware wallet's onboard TRNG — is a black box. You cannot observe or verify the entropy source. History shows
+    this trust has been catastrophically misplaced:
+  </p>
+  <div class="rationale">
+    <div class="label">Notable digital RNG failures</div>
+    <strong>Dual_EC_DRBG (2006–2013)</strong> — A NIST-standardized PRNG contained a kleptographic backdoor.
+    NSA spent ~$250M/year on its Sigint Enabling Project to influence commercial product designs, and reportedly paid RSA Security $10M
+    to make Dual_EC_DRBG the default in BSAFE. Withdrawn from NIST SP 800-90A after the Snowden disclosures.
+    <br><br>
+    <strong>Debian OpenSSL (2006–2008)</strong> — A well-intentioned code change to suppress a Valgrind warning removed
+    two lines from OpenSSL's <code>md_rand.c</code>, reducing entropy from 128+ bits to ~15 bits (the process ID).
+    Every OpenSSL-generated SSL/SSH key on Debian-based systems for 20 months was trivially breakable. CVE-2008-0166.
+    <br><br>
+    <strong>Intel RDRAND</strong> — Processes raw entropy through on-chip AES-CBC-MAC whitening, making output
+    fundamentally unauditable. Linux kernel developer Theodore Ts'o resisted pressure to rely on RDRAND alone.
+    The CrossTalk vulnerability (CVE-2020-0543) later showed RDRAND outputs leaked across CPU cores via a shared staging buffer.
+    <br><br>
+    <strong>Milk Sad (2023)</strong> — Libbitcoin Explorer seeded a Mersenne Twister with 32 bits of clock time,
+    collapsing 2<sup>256</sup> keyspaces to 2<sup>32</sup>; roughly $900k was swept in coordinated thefts (CVE-2023-39910).
+    Trust Wallet shipped the same pattern (CVE-2023-31290), exploited in the wild. The lesson cuts both ways:
+    Milk Sad was a key-<em>generation</em> tool. Perfect physical entropy does not protect you from the software
+    that later consumes it — see phase 4.
+  </div>
+  <p>
+    Dice from a board game and the coin in your pocket have none of this. You can watch every roll and every flip,
+    and the physics are well understood (see the notes in each tab). There is nothing inside them to trust.
+  </p>
+
+  <h2>1 · Prepare the Room</h2>
+  <div class="checklist">
+    <div class="label">Before you start — one sweep of the room</div>
+    <ul>
+      <li>Every microphone and radio out of the room, powered off — not muted, not airplane mode: phone, watch, earbuds, laptop, smart speaker. A phone mic recovers over 90% of keystrokes (Harrison 2023), and an active MEMS microphone leaks its audio as RF whatever the software says (Onishi 2025).</li>
+      <li>No calls while rolling or while typing. Keystroke recovery works at 93% over Zoom with no language model, and at 91.7% on random keys over VoIP — "my password is random" is not a defense here.</li>
+      <li>Work silently: don't murmur characters as you write or type. A vibrating window or light bulb can carry room audio out even after the devices are gone (Lamphone 2022).</li>
+      <li>Webcam covered. No screen will ever display the key (phase 4).</li>
+      <li>Watch and fitness band off your writing wrist.</li>
+      <li>One loose sheet on a hard clipboard, the clipboard on a rug or towel — hard backing so nothing prints through to the sheet below, soft underneath so the desk doesn't carry pen vibrations.</li>
+      <li>Read the printed tables once: every cell distinct, the grid complete. A corrupted table discards entropy silently, and this is the one integrity check a human can do in a minute.</li>
+      <li>If you ran the <a href="entropy-test.html">fairness tester</a>, that was another day — and the device that ran it is already out of the room.</li>
+      <li>Away from home? Assume the room is instrumented and wait until you're back. (If you must: a phone time-of-flight camera sweep finds hidden cameras better than eyeballing — 89% vs 46% detection — then the phone leaves like everything else.)</li>
+      <li>Blanket over you and the workspace. It stops line of sight and nothing else — not sound, not desk vibration, not RF, not the heat your fingers will leave on the keys; the lines above and phase 4 cover those. It looks silly. It works.</li>
+    </ul>
+  </div>
+  <p class="phase-note">For the rolling itself: no published attack recovers die faces or coin outcomes from sound or vibration — an absence of research, not a guarantee. Either way, the microphone sweep in the first line already covers it.</p>
+
+  <h2>2 · Generate &nbsp;+&nbsp; 3 · Verify</h2>
+  <p class="phase-note">Pick your instrument. Both phases happen on paper, under the blanket; the procedure in each tab walks through them in order.</p>
 
   <!-- TABBED SECTIONS -->
   <div class="mode-tabs">
@@ -284,35 +375,14 @@
     </p>
 
     <table class="summary-table">
-      <tr><th>Total Flips</th><th>Groups of 5</th><th>Remainder</th><th>Password Length</th><th>Entropy</th></tr>
+      <tr><th>Total Flips</th><th>Groups of 5</th><th>Remainder</th><th>Password Length</th><th>Entropy (Shannon)</th></tr>
       <tr class="highlight-green"><td>256</td><td>51 groups (255 bits)</td><td>1 bit (Table B)</td><td>52 chars + dots</td><td>256 bits</td></tr>
     </table>
 
     <p class="convention">Convention: Heads = 1, Tails = 0 &nbsp;(pick either — just be consistent)</p>
-
-    <h2>Why a Coin?</h2>
     <p>
-      Every digital random number generator you might use instead — <code>/dev/urandom</code>, Intel's RDRAND instruction,
-      a hardware wallet's onboard TRNG — is a black box. You cannot observe or verify the entropy source. History shows
-      this trust has been catastrophically misplaced:
-    </p>
-    <div class="rationale">
-      <div class="label">Notable digital RNG failures</div>
-      <strong>Dual_EC_DRBG (2006–2013)</strong> — A NIST-standardized PRNG contained a kleptographic backdoor.
-      NSA spent ~$250M/year on its Sigint Enabling Project to influence commercial product designs, and reportedly paid RSA Security $10M
-      to make Dual_EC_DRBG the default in BSAFE. Withdrawn from NIST SP 800-90A after the Snowden disclosures.
-      <br><br>
-      <strong>Debian OpenSSL (2006–2008)</strong> — A well-intentioned code change to suppress a Valgrind warning removed
-      two lines from OpenSSL's <code>md_rand.c</code>, reducing entropy from 128+ bits to ~15 bits (the process ID).
-      Every OpenSSL-generated SSL/SSH key on Debian-based systems for 20 months was trivially breakable. CVE-2008-0166.
-      <br><br>
-      <strong>Intel RDRAND</strong> — Processes raw entropy through on-chip AES-CBC-MAC whitening, making output
-      fundamentally unauditable. Linux kernel developer Theodore Ts'o resisted pressure to rely on RDRAND alone.
-      The CrossTalk vulnerability (CVE-2020-0543) later showed RDRAND outputs leaked across CPU cores via a shared staging buffer.
-    </div>
-    <p>
-      <strong>A coin in your pocket cannot be backdoored.</strong> You can observe every flip. The physics are well-understood
-      (see Security Notes below). No firmware, no supply chain, no trust required.
+      You almost certainly have a coin in your pocket — and a coin that has spent years there cannot have been
+      backdoored. A coin handed to you for the occasion answers a different question.
     </p>
 
     <!-- COIN LOOKUP TABLES -->
@@ -373,82 +443,94 @@
       <div class="result result-green">9 t d . . .</div>
     </div>
 
-    <h2>Procedure — Coin</h2>
+    <h2>Procedure — Coin <span style="font-weight:400;color:#888;font-size:0.85rem;">(phases 2 and 3)</span></h2>
     <ol class="steps steps-green">
-      <li>Flip your coin <strong>5 times</strong> and write down the bits left to right (e.g., HTTHT → <code>10010</code>).</li>
-      <li>Look up the 5-bit string in <strong>Table A</strong> to find the character. Write it down.</li>
-      <li>Repeat steps 1–2 for a total of <strong>51 groups</strong> (255 flips, characters 1–51).</li>
-      <li>Flip <strong>1 more time</strong>. Look up the single bit in <strong>Table B</strong> for the 52nd character.</li>
-      <li>Transcribe your 52 characters, inserting a <code>.</code> every 5 characters for readability.</li>
+      <li>Shake the coin between cupped hands — <strong>don't look at which face is up</strong> — flip, and catch it
+        in your palm; never let it spin or bounce. Do this <strong>5 times</strong>, writing the bits left to right
+        (e.g., HTTHT → <code>10010</code>).</li>
+      <li>Look up the 5-bit string in <strong>Table A</strong> and write the character in the Char column.</li>
+      <li>Repeat steps 1–2 for <strong>51 groups</strong> (255 flips, characters 1–51), then flip <strong>once
+        more</strong> and look up the single bit in <strong>Table B</strong> for the 52nd character. Generation ends
+        here; the key now exists on paper. (A flip misread as it lands costs nothing — whatever you wrote is the
+        key, and it's just as random. Errors <em>after</em> the written record are the ones that lock you out.)</li>
+      <li class="verify-step">Verify: cover the Char column, redo every lookup from the flip columns, and write the result in the
+        Check column. Where the two disagree, the lookup was wrong — fix it from the raw bits. Proofreading by eye
+        misses errors; an independent second entry is the method that actually works (Barchard 2011).</li>
+      <li class="verify-step">Transcribe the Char column into <strong>both</strong> record grids below, inserting a <code>.</code> every
+        5 characters.</li>
+      <li class="verify-step">Read each record back against the worksheet, character by character, pointing with a pencil.</li>
     </ol>
 
     <h3>Coin Recording Worksheet</h3>
-    <p style="font-size:0.85rem; color:#666;">Groups 1–51 use Table A (5 flips). Group 52 uses Table B (1 flip).</p>
+    <p style="font-size:0.85rem; color:#666;">Groups 1–51 use Table A (5 flips); group 52 uses Table B (1 flip).
+      Unchecked, roughly one transcription in three contains at least one silent error — the Check column is how
+      you find it now instead of at decryption time.</p>
     <div class="worksheet-double">
       <div class="worksheet"><table>
-        <tr><th>#</th><th>F1</th><th>F2</th><th>F3</th><th>F4</th><th>F5</th><th>Char</th></tr>
-        <tr><td>1</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
-        <tr><td>2</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
-        <tr><td>3</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
-        <tr><td>4</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
-        <tr><td>5</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
-        <tr><td>6</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
-        <tr><td>7</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
-        <tr><td>8</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
-        <tr><td>9</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
-        <tr><td>10</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
-        <tr><td>11</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
-        <tr><td>12</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
-        <tr><td>13</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
-        <tr><td>14</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
-        <tr><td>15</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
-        <tr><td>16</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
-        <tr><td>17</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
-        <tr><td>18</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
-        <tr><td>19</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
-        <tr><td>20</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
-        <tr><td>21</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
-        <tr><td>22</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
-        <tr><td>23</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
-        <tr><td>24</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
-        <tr><td>25</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
-        <tr><td>26</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
+        <tr><th>#</th><th>F1</th><th>F2</th><th>F3</th><th>F4</th><th>F5</th><th>Char</th><th>Check</th></tr>
+        <tr><td>1</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
+        <tr><td>2</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
+        <tr><td>3</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
+        <tr><td>4</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
+        <tr><td>5</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
+        <tr><td>6</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
+        <tr><td>7</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
+        <tr><td>8</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
+        <tr><td>9</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
+        <tr><td>10</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
+        <tr><td>11</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
+        <tr><td>12</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
+        <tr><td>13</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
+        <tr><td>14</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
+        <tr><td>15</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
+        <tr><td>16</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
+        <tr><td>17</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
+        <tr><td>18</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
+        <tr><td>19</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
+        <tr><td>20</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
+        <tr><td>21</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
+        <tr><td>22</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
+        <tr><td>23</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
+        <tr><td>24</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
+        <tr><td>25</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
+        <tr><td>26</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
       </table></div>
       <div class="worksheet"><table>
-        <tr><th>#</th><th>F1</th><th>F2</th><th>F3</th><th>F4</th><th>F5</th><th>Char</th></tr>
-        <tr><td>27</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
-        <tr><td>28</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
-        <tr><td>29</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
-        <tr><td>30</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
-        <tr><td>31</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
-        <tr><td>32</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
-        <tr><td>33</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
-        <tr><td>34</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
-        <tr><td>35</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
-        <tr><td>36</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
-        <tr><td>37</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
-        <tr><td>38</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
-        <tr><td>39</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
-        <tr><td>40</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
-        <tr><td>41</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
-        <tr><td>42</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
-        <tr><td>43</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
-        <tr><td>44</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
-        <tr><td>45</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
-        <tr><td>46</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
-        <tr><td>47</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
-        <tr><td>48</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
-        <tr><td>49</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
-        <tr><td>50</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
-        <tr><td>51</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
+        <tr><th>#</th><th>F1</th><th>F2</th><th>F3</th><th>F4</th><th>F5</th><th>Char</th><th>Check</th></tr>
+        <tr><td>27</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
+        <tr><td>28</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
+        <tr><td>29</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
+        <tr><td>30</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
+        <tr><td>31</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
+        <tr><td>32</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
+        <tr><td>33</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
+        <tr><td>34</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
+        <tr><td>35</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
+        <tr><td>36</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
+        <tr><td>37</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
+        <tr><td>38</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
+        <tr><td>39</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
+        <tr><td>40</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
+        <tr><td>41</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
+        <tr><td>42</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
+        <tr><td>43</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
+        <tr><td>44</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
+        <tr><td>45</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
+        <tr><td>46</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
+        <tr><td>47</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
+        <tr><td>48</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
+        <tr><td>49</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
+        <tr><td>50</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
+        <tr><td>51</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
         <tr style="background:#eef5ed;">
-          <td><strong>52</strong></td><td class="write-in"></td><td style="background:#eee;color:#aaa;font-size:0.7rem;">—</td><td style="background:#eee;color:#aaa;font-size:0.7rem;">—</td><td style="background:#eee;color:#aaa;font-size:0.7rem;">—</td><td style="background:#eee;color:#aaa;font-size:0.7rem;">—</td><td class="write-in"></td>
+          <td><strong>52</strong></td><td class="write-in"></td><td style="background:#eee;color:#aaa;font-size:0.7rem;">—</td><td style="background:#eee;color:#aaa;font-size:0.7rem;">—</td><td style="background:#eee;color:#aaa;font-size:0.7rem;">—</td><td style="background:#eee;color:#aaa;font-size:0.7rem;">—</td><td class="write-in"></td><td class="write-in"></td>
         </tr>
       </table></div>
     </div>
 
-    <h3>Final Password</h3>
+    <h3>The Record — Make Two</h3>
     <div class="example-box">
+      <div class="label">Copy 1</div>
       <div class="password-display">
         __ __ __ __ __<span class="dot"> . </span>__ __ __ __ __<span class="dot"> . </span>__ __ __ __ __<span class="dot"> . </span>__ __ __ __ __<span class="dot"> . </span>__ __ __ __ __<span class="dot"> . </span><br>
         __ __ __ __ __<span class="dot"> . </span>__ __ __ __ __<span class="dot"> . </span>__ __ __ __ __<span class="dot"> . </span>__ __ __ __ __<span class="dot"> . </span>__ __ __ __ __<span class="dot"> . </span>__ __
@@ -457,6 +539,19 @@
         52 characters in 10 groups of 5 + 2 &nbsp;|&nbsp; Alphabet: 0–9 a–z without i&nbsp;l&nbsp;o&nbsp;u (32 symbols)
       </span>
     </div>
+    <div class="example-box">
+      <div class="label">Copy 2</div>
+      <div class="password-display">
+        __ __ __ __ __<span class="dot"> . </span>__ __ __ __ __<span class="dot"> . </span>__ __ __ __ __<span class="dot"> . </span>__ __ __ __ __<span class="dot"> . </span>__ __ __ __ __<span class="dot"> . </span><br>
+        __ __ __ __ __<span class="dot"> . </span>__ __ __ __ __<span class="dot"> . </span>__ __ __ __ __<span class="dot"> . </span>__ __ __ __ __<span class="dot"> . </span>__ __ __ __ __<span class="dot"> . </span>__ __
+      </div>
+    </div>
+    <p class="phase-note">Fill in both, check them against each other character by character, and store them in
+      different places (phase 6). This string cannot be memorized and cannot be regenerated — the two copies are
+      the key. If a stored copy fails years from now, remember the alphabet has no <code>i</code>, <code>l</code>,
+      <code>o</code>, or <code>u</code> — read those as <code>1</code>, <code>1</code>, <code>0</code>,
+      <code>0</code> — and try swapping <code>5</code>/<code>s</code> and <code>2</code>/<code>z</code> before
+      declaring the key lost (Chatterjee 2016).</p>
 
     <!-- COIN SECURITY NOTES -->
     <h2>Coin Security Notes</h2>
@@ -469,7 +564,12 @@
       ("Fair coins tend to land on the same side they started," arXiv:2310.04153, 2023; <em>JASA</em> 2025):
       measured P(same side) = <strong>0.508</strong>, 95% CI [0.506, 0.509], while P(heads) = 0.500, 95% CI [0.498, 0.502] —
       <strong>no coin denomination or country showed a heads-vs-tails bias when flipped</strong>.
-      The entropy cost of a 0.508 bias is ~0.00019 bits per flip, or <strong>0.047 bits over a full 256-flip sequence</strong> — completely negligible.
+      The cost of a 0.508 same-side bias, if you take no countermeasure: <strong>0.047 Shannon bits over 256 flips</strong> —
+      or about 5.9 bits in the min-entropy accounting NIST SP 800-90B applies to key material, leaving ~250 bits
+      either way. An unusually wobbly flipper (P(same side) = 0.54, 2σ in Bartoš's data) loses ~28 bits, leaving
+      ~228 — still ~114-bit security even against Grover. Or make the whole question moot: Bartoš et al.'s own
+      recommendation is to conceal or randomize the coin's starting side, which takes the measured bias to exactly
+      zero — which is what step 1 of the procedure does.
     </div>
 
     <div class="security-note warning">
@@ -477,21 +577,25 @@
       physical asymmetry. Spinning a US penny on a table lands tails roughly 55% of the time. The largest dataset, 20,422 spins
       by students of Robin Lock at St.&nbsp;Lawrence University (<em>Chance News</em> 11.02, 2002), measured 45.0%
       heads. Gelman &amp; Nolan (<em>The American Statistician</em> 56(4), 2002) discuss the physics of why spinning
-      introduces such biases. Polish researchers Gliszczyński &amp; Zawadowski found the
-      Belgian €1 coin landed heads ~56% when spun. These are entropy-destroying biases.
+      introduces such biases, including the widely reported finding by Polish researchers Gliszczyński &amp;
+      Zawadowski that the Belgian €1 coin landed heads ~56% when spun. These are entropy-destroying biases.
       <strong>Flip the coin with your thumb and catch it in your hand. Never let it spin or bounce on a surface.</strong>
+      And don't look at which side is up before you flip — the same-side bias is a memory of the starting face;
+      deny yourself the memory and it's gone, at zero flip cost.
     </div>
 
     <div class="security-note info">
-      <strong>Von Neumann extractor (optional debiasing).</strong> &nbsp;Von Neumann (1951) proved a beautifully simple technique:
-      flip twice. If the pair differs (HT or TH), output the first result. If the pair matches (HH or TT), discard both and reflip.
-      Because P(HT) = p(1−p) = P(TH) for <em>any</em> bias p, the output is <strong>perfectly unbiased regardless of the coin's actual bias</strong>,
-      requiring only that flips are independent. The cost: ~4 flips per fair bit at best (25% efficiency).
-      For 256-bit: budget ~1,024 flips. Peres (1992) improved efficiency by recursively processing discarded pairs.
+      <strong>Von Neumann's extractor — for bent coins, not wobbly thumbs.</strong> &nbsp;Von Neumann (1951): flip twice;
+      HT → heads, TH → tails, HH/TT → discard and reflip. Because P(HT) = p(1−p) = P(TH) for <em>any</em> fixed bias p,
+      this removes any bias in the coin itself — a bent coin, a weighted coin — at a cost of ~4 flips per fair bit
+      (budget ~1,024 flips for 256 bits; Peres 1992 improves the efficiency).
       <br><br>
-      <em>Practical recommendation:</em> The raw 0.8% bias is negligible for key generation. Use the von Neumann extractor only if
-      you want a mathematically airtight guarantee, or if you suspect your particular flipping technique is unusually wobbly
-      (Bartoš et al. found between-person variation with σ ≈ 1.6%).
+      What it cannot remove is the same-side bias, which is not a lopsided coin but a correlation between consecutive
+      flips: von Neumann's guarantee assumes independent flips, and its output inherits whatever correlation the input
+      had (Blum 1986 gives the Markov-robust extension). Since flipped coins show no fixed bias at all (Bartoš et al.),
+      the fix that matters is randomizing the starting side — step 1 of the procedure. Use von Neumann only if you
+      distrust the coin as an object; the Sia coins-in-a-cup method (see Prior Art) is robust to per-coin bias in a
+      way von Neumann is not.
     </div>
 
     <!-- COIN REFERENCES -->
@@ -504,6 +608,7 @@
         <li>Gelman, A. &amp; Nolan, D. (2002). <a href="https://www.stat.berkeley.edu/~nolan/Papers/dice.pdf">You Can Load a Die, But You Can't Bias a Coin</a>. <em>The American Statistician</em>, 56(4), 308–311.</li>
         <li>Von Neumann, J. (1951). <a href="https://mcnp.lanl.gov/pdf_files/InBook_Computing_1961_Neumann_JohnVonNeumannCollectedWorks_VariousTechniquesUsedinConnectionwithRandomDigits.pdf">Various techniques used in connection with random digits</a>. <em>NBS Applied Math Series</em>, 12, 36–38.</li>
         <li>Peres, Y. (1992). <a href="https://projecteuclid.org/journals/annals-of-statistics/volume-20/issue-1/Iterating-Von-Neumanns-Procedure-for-Extracting-Random-Bits/10.1214/aos/1176348543.full">Iterating Von Neumann's Procedure for Extracting Random Bits</a>. <em>Annals of Statistics</em>, 20(1), 590–597.</li>
+        <li>Blum, M. (1986). <a href="https://link.springer.com/article/10.1007/BF02579167">Independent unbiased coin flips from a correlated biased source — a finite state Markov chain</a>. <em>Combinatorica</em>, 6(2), 97–108.</li>
       </ol>
     </div>
 
@@ -517,28 +622,17 @@
     <p>
       The alphabet is <strong>36 characters</strong>: the 26 lowercase letters <code>a–z</code> plus 10 digits <code>0–9</code>.
       Since 6&nbsp;×&nbsp;6&nbsp;=&nbsp;36, every roll of <strong>two dice</strong> maps to exactly one character with zero waste.
+      Dice are also about five times faster than coins: 50 throws of two dice against 256 flips.
       A literal <code>.</code> is inserted every 5 characters for readability — dots carry no entropy but can be left in the password.
     </p>
 
     <table class="summary-table">
-      <tr><th>Total Rolls</th><th>Characters</th><th>Bits/Char</th><th>Password Length</th><th>Entropy</th></tr>
+      <tr><th>Total Rolls</th><th>Characters</th><th>Bits/Char</th><th>Password Length</th><th>Entropy (Shannon)</th></tr>
       <tr class="highlight-blue"><td>50 (pairs of 2d6)</td><td>50</td><td>log<sub>2</sub>(36) ≈ 5.17</td><td>50 chars + dots</td><td>258.5 bits</td></tr>
     </table>
 
     <p class="convention">Always roll two dice together. First die = row, second die = column (or use different colors).</p>
     <p class="convention">Handwriting: this alphabet keeps the classic look-alikes (<code>0</code>/<code>o</code>, <code>1</code>/<code>l</code>, <code>5</code>/<code>s</code>, <code>2</code>/<code>z</code>). Slash your zeros, cross your sevens, and give <code>1</code> a base so it can't be read as <code>l</code>.</p>
-
-    <h2>Why Dice?</h2>
-    <p>
-      The same RNG distrust that motivates coin-based generation applies to dice. But dice offer a key advantage:
-      <strong>faster generation</strong>. Where coins require 256 individual flips, dice need only 50 simultaneous two-dice rolls.
-    </p>
-    <p>
-      <strong>Supply chain argument:</strong> Standard 6-sided dice are commodity items manufactured globally by hundreds of companies.
-      Unlike casino dice (sold only to casinos) or specialty polyhedral dice, ordinary d6 dice are available at any toy store, pharmacy,
-      or dollar store. An attacker cannot realistically intercept or tamper with the global supply of commodity dice.
-      <strong>Grab two dice from any board game.</strong>
-    </p>
 
     <!-- DICE LOOKUP TABLE -->
     <div class="table-section">
@@ -570,77 +664,88 @@
       <div class="result result-blue">i y f t 8 .</div>
     </div>
 
-    <h2>Procedure — Dice</h2>
+    <h2>Procedure — Dice <span style="font-weight:400;color:#888;font-size:0.85rem;">(phases 2 and 3)</span></h2>
     <ol class="steps steps-blue">
-      <li>Roll <strong>both dice together</strong>. Note the first die (row) and second die (column).</li>
-      <li>Look up the character in <strong>Table D</strong> at that row and column. Write it down.</li>
-      <li>Repeat steps 1–2 for a total of <strong>50 rolls</strong>.</li>
-      <li>Transcribe your 50 characters, inserting a <code>.</code> every 5 characters for readability.</li>
+      <li>Roll <strong>both dice together</strong> so they bounce and tumble. Write the first die (row) and second
+        die (column) in the worksheet.</li>
+      <li>Look up the character in <strong>Table D</strong> at that row and column. Write it in the Char column.</li>
+      <li>Repeat steps 1–2 for <strong>50 rolls</strong>. Generation ends here; the key now exists on paper.
+        (A die misread at roll time costs nothing — whatever you wrote is the key, and it's just as random.
+        Errors <em>after</em> the written record are the ones that lock you out.)</li>
+      <li class="verify-step">Verify: cover the Char column, redo every lookup from the dice columns, and write the result in the
+        Check column. Where the two disagree, the lookup was wrong — fix it from the raw values. Proofreading by eye
+        misses errors; an independent second entry is the method that actually works (Barchard 2011).</li>
+      <li class="verify-step">Transcribe the Char column into <strong>both</strong> record grids below, inserting a <code>.</code> every
+        5 characters.</li>
+      <li class="verify-step">Read each record back against the worksheet, character by character, pointing with a pencil.</li>
     </ol>
 
     <h3>Dice Recording Worksheet</h3>
-    <p style="font-size:0.85rem; color:#666;">All 50 rolls use Table D (2 dice per character).</p>
+    <p style="font-size:0.85rem; color:#666;">All 50 rolls use Table D (2 dice per character).
+      Unchecked, roughly one transcription in three contains at least one silent error — the Check column is how
+      you find it now instead of at decryption time.</p>
     <div class="worksheet-double">
       <div class="worksheet"><table>
-        <tr><th>#</th><th>Die 1</th><th>Die 2</th><th>Char</th></tr>
-        <tr><td>1</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
-        <tr><td>2</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
-        <tr><td>3</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
-        <tr><td>4</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
-        <tr><td>5</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
-        <tr><td>6</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
-        <tr><td>7</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
-        <tr><td>8</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
-        <tr><td>9</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
-        <tr><td>10</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
-        <tr><td>11</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
-        <tr><td>12</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
-        <tr><td>13</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
-        <tr><td>14</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
-        <tr><td>15</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
-        <tr><td>16</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
-        <tr><td>17</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
-        <tr><td>18</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
-        <tr><td>19</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
-        <tr><td>20</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
-        <tr><td>21</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
-        <tr><td>22</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
-        <tr><td>23</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
-        <tr><td>24</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
-        <tr><td>25</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
+        <tr><th>#</th><th>Die 1</th><th>Die 2</th><th>Char</th><th>Check</th></tr>
+        <tr><td>1</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
+        <tr><td>2</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
+        <tr><td>3</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
+        <tr><td>4</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
+        <tr><td>5</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
+        <tr><td>6</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
+        <tr><td>7</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
+        <tr><td>8</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
+        <tr><td>9</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
+        <tr><td>10</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
+        <tr><td>11</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
+        <tr><td>12</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
+        <tr><td>13</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
+        <tr><td>14</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
+        <tr><td>15</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
+        <tr><td>16</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
+        <tr><td>17</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
+        <tr><td>18</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
+        <tr><td>19</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
+        <tr><td>20</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
+        <tr><td>21</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
+        <tr><td>22</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
+        <tr><td>23</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
+        <tr><td>24</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
+        <tr><td>25</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
       </table></div>
       <div class="worksheet"><table>
-        <tr><th>#</th><th>Die 1</th><th>Die 2</th><th>Char</th></tr>
-        <tr><td>26</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
-        <tr><td>27</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
-        <tr><td>28</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
-        <tr><td>29</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
-        <tr><td>30</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
-        <tr><td>31</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
-        <tr><td>32</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
-        <tr><td>33</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
-        <tr><td>34</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
-        <tr><td>35</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
-        <tr><td>36</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
-        <tr><td>37</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
-        <tr><td>38</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
-        <tr><td>39</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
-        <tr><td>40</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
-        <tr><td>41</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
-        <tr><td>42</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
-        <tr><td>43</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
-        <tr><td>44</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
-        <tr><td>45</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
-        <tr><td>46</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
-        <tr><td>47</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
-        <tr><td>48</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
-        <tr><td>49</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
-        <tr><td>50</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
+        <tr><th>#</th><th>Die 1</th><th>Die 2</th><th>Char</th><th>Check</th></tr>
+        <tr><td>26</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
+        <tr><td>27</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
+        <tr><td>28</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
+        <tr><td>29</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
+        <tr><td>30</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
+        <tr><td>31</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
+        <tr><td>32</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
+        <tr><td>33</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
+        <tr><td>34</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
+        <tr><td>35</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
+        <tr><td>36</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
+        <tr><td>37</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
+        <tr><td>38</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
+        <tr><td>39</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
+        <tr><td>40</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
+        <tr><td>41</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
+        <tr><td>42</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
+        <tr><td>43</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
+        <tr><td>44</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
+        <tr><td>45</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
+        <tr><td>46</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
+        <tr><td>47</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
+        <tr><td>48</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
+        <tr><td>49</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
+        <tr><td>50</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
       </table></div>
     </div>
 
-    <h3>Final Password</h3>
+    <h3>The Record — Make Two</h3>
     <div class="example-box">
+      <div class="label">Copy 1</div>
       <div class="password-display">
         __ __ __ __ __<span class="dot"> . </span>__ __ __ __ __<span class="dot"> . </span>__ __ __ __ __<span class="dot"> . </span>__ __ __ __ __<span class="dot"> . </span>__ __ __ __ __<span class="dot"> . </span><br>
         __ __ __ __ __<span class="dot"> . </span>__ __ __ __ __<span class="dot"> . </span>__ __ __ __ __<span class="dot"> . </span>__ __ __ __ __<span class="dot"> . </span>__ __ __ __ __
@@ -649,6 +754,18 @@
         50 characters in 10 groups of 5 &nbsp;|&nbsp; Alphabet: a–z 0–9 (36 symbols)
       </span>
     </div>
+    <div class="example-box">
+      <div class="label">Copy 2</div>
+      <div class="password-display">
+        __ __ __ __ __<span class="dot"> . </span>__ __ __ __ __<span class="dot"> . </span>__ __ __ __ __<span class="dot"> . </span>__ __ __ __ __<span class="dot"> . </span>__ __ __ __ __<span class="dot"> . </span><br>
+        __ __ __ __ __<span class="dot"> . </span>__ __ __ __ __<span class="dot"> . </span>__ __ __ __ __<span class="dot"> . </span>__ __ __ __ __<span class="dot"> . </span>__ __ __ __ __
+      </div>
+    </div>
+    <p class="phase-note">Fill in both, check them against each other character by character, and store them in
+      different places (phase 6). This string cannot be memorized and cannot be regenerated — the two copies are
+      the key. If a stored copy fails years from now, try the look-alike substitutions first —
+      <code>0</code>/<code>o</code>, <code>1</code>/<code>l</code>, <code>5</code>/<code>s</code>,
+      <code>2</code>/<code>z</code> — before declaring the key lost (Chatterjee 2016).</p>
 
     <!-- DICE SECURITY NOTES -->
     <h2>Dice Security Notes</h2>
@@ -661,14 +778,25 @@
       <br><br>
       <strong>An attacker doesn't know which dice you used or their specific bias.</strong> Each die's imperfections
       are unique. Averaged across the global population of dice, biases cancel out. Unlike a backdoored RNG where the attacker
-      knows the flaw, dice bias is local, small, and varies randomly between dice.
+      knows the flaw, dice bias is local, small, and varies randomly between dice. Treat that as a bonus on top of
+      the conservative accounting below, not a substitute for it.
     </div>
 
     <div class="security-note">
       <strong>No debiasing needed.</strong> &nbsp;Unlike coins (where the same-side bias is systematic across all coins),
-      dice bias is idiosyncratic and tiny. A ~1–2% bias on any individual face, spread across 50 rolls, reduces entropy by
-      a fraction of a bit — completely negligible for a 258-bit key. Von Neumann-style debiasing would waste rolls for no
-      practical security gain.
+      dice bias is idiosyncratic and tiny. A ~1–2% bias on any individual face, over 50 rolls, costs about 3 bits of
+      min-entropy — the conservative measure NIST SP 800-90B uses for key material — leaving ~255.6 of the 258.5.
+      Von Neumann-style debiasing would waste rolls for no practical security gain.
+    </div>
+
+    <div class="security-note">
+      <strong>Whose dice?</strong> &nbsp;An attacker cannot realistically tamper with the world's supply of commodity
+      dice — d6s are made by hundreds of companies and sold in every toy store. A <em>targeted</em> attacker can
+      tamper with yours: dice that arrived as a gift belong to a different threat model than dice from your own
+      Monopoly box. Use dice you already owned, or transparent precision dice. A grossly loaded die fails the
+      <a href="entropy-test.html">fairness tester</a> within about a hundred rolls, and even the worst case — one
+      face at 50% — leaves ~100 min-entropy bits: below the quantum margin, but still beyond classical brute force
+      behind a real KDF. Tampering degrades the scheme and gets caught; it doesn't quietly break it.
     </div>
 
     <div class="security-note warning">
@@ -690,35 +818,29 @@
   </div><!-- /contentDice -->
 
 
-  <!-- SHARED SECURITY NOTES (always visible) -->
-  <h2>Shared Security Notes</h2>
+  <!-- SHARED PHASES 4–6 (always visible) -->
+  <p class="phase-note">From here the phases are shared — the instrument no longer matters.</p>
+  <h2>4 · Enter</h2>
+  <p>
+    Everything up to this point trusted nothing but physics and your own eyes. Typing ends that. From here the
+    keyboard, the operating system, and the receiving software are trusted components, exactly as they are for any
+    password — physical entropy buys nothing against a keylogger, and this is the one trust dice cannot remove.
+    It is not hypothetical: KeePass, named below as a consumer of this password, leaked typed master passwords out
+    of process memory (CVE-2023-32784), and derived keys linger in RAM, swap, and hibernation files long after
+    entry (Halderman 2008). Enter the key on the cleanest machine the secret deserves: full-disk encryption on,
+    hibernation off or swap encrypted, powered down when you finish. An air-gapped or auditable-I/O device
+    (e.g., a <a href="https://www.crowdsupply.com/sutajio-kosagi/precursor">Precursor</a>) shrinks this phase's
+    trusted base the way paper shrank generation's.
+  </p>
 
   <div class="security-note warning">
-    <strong>Paper impressions — shred at least 7 pages.</strong> &nbsp;Forensic electrostatic detection (ESDA, first commercialized in 1978 by Foster &amp; Freeman) can recover pen indentations from up to <strong>6 sheets</strong> beneath the page you wrote on.
-    Seward's charge transport model (<em>J. Forensic Sciences</em>, 1999) explains the mechanism: paper-to-paper friction
-    creates differential surface charges detectable by ESDA's corona wire. Under normal storage conditions,
-    impressions can persist for decades.
-    <br><br>
-    <em>Best practice:</em> Write on a single loose sheet placed on a hard, non-porous surface (glass, hard clipboard).
-    If you used a notepad, tear out and destroy the <strong>first 7 pages</strong> beneath the writing sheet.
-    Oblique lighting reveals impressions 3–4 pages deep; ESDA reaches up to 6, hence the 7-page margin.
-    <br><br>
-    <em>Destruction method:</em> Cross-cut shredding (DIN 66399 level P-4) is minimum.
-    For high-security: wet pulp the pages (soak until fibers separate, then blend) or burn to ash.
-    NSA guidance warns that even books thrown into a fire can remain half-readable after an hour.
-    Strip-cut shredding has been reconstructed — most famously by Iranian students during the 1979 hostage crisis.
-  </div>
-
-  <div class="security-note warning">
-    <strong>Visual eavesdropping — make a "bedsheet SCIF."</strong> &nbsp;Shoulder-surfing attacks are effective at 0.9+ meters
-    with the naked eye; modern phone cameras with 5× zoom extend this dramatically. NYU's IllusionPIN study found
-    <strong>21 of 21 unprotected shoulder-surfing attacks succeeded</strong>. Thermal cameras can read keypad heat signatures after entry.
-    <br><br>
-    Drape a bedsheet, blanket, or large towel over yourself and your workspace to create a makeshift
-    SCIF (Sensitive Compartmented Information Facility). This blocks line-of-sight observation and defeats most camera angles.
-    Do your coin flips or dice rolls and table lookups underneath. When ready, enter the password into your secure device
-    (e.g., a <a href="https://www.crowdsupply.com/sutajio-kosagi/precursor" style="color:#a33;">Precursor</a>
-    or other air-gapped hardware) under the same cover. It looks silly. It works.
+    <strong>Screens and cameras.</strong> &nbsp;Shoulder surfing works: in NYU's IllusionPIN study, 21 of 21
+    unprotected attacks succeeded, and a phone camera with 5× zoom extends the range dramatically. Newer work needs
+    no view of the keyboard at all: upper-body motion in a video call leaks keystrokes (Sabra 2021), and on-screen
+    text reconstructs from its reflection in the typist's eyeglasses (Private Eye 2023).
+    <strong>Type the key blind into a masked field; never display it on a screen.</strong> Touch-type it —
+    hunt-and-peck is the typing style both the acoustic and thermal papers single out. Keep the blanket on for
+    entry, webcam covered, no calls (phase 1). It still looks silly. It still works.
   </div>
 
   <div class="security-note warning">
@@ -727,31 +849,87 @@
     models tested were vulnerable. USB keyboards were also found vulnerable, though PS/2 keyboards were easiest to attack.
     Van Eck phreaking of CRT monitors was demonstrated at hundreds of meters in 1985. Even Faraday cages can be
     defeated: Guri et al.'s ODINI attack (IEEE TIFS, 2020) exfiltrated data through Faraday walls via low-frequency
-    magnetic field modulation.
+    magnetic field modulation. The channel is not historical: the same emanation class now reads modern HDMI and
+    mobile screens (Screen Gleaning 2021; Deep-TEMPEST 2024).
     <br><br>
     <em>Implication:</em> When entering your password into a device, do so in an interior room away from external walls
     and windows. Ideally use a device with a verified, auditable I/O path (e.g., the Precursor's FPGA-based architecture,
-    where the entire CPU is instantiated from open RTL source). A bedsheet blocks visual eavesdropping but not EM emanations.
+    where the entire CPU is instantiated from open RTL source). The blanket (phase 1) stops line of sight, not EM.
   </div>
 
-  <div class="security-note">
-    <strong>256-bit quantum resistance.</strong> &nbsp;AES-256 retains ~128-bit effective security against Grover's quantum algorithm,
-    making it NIST's recommendation for long-term sensitive data. Both coin (256 bits) and dice (258.5 bits) modes exceed this threshold.
+  <div class="security-note warning">
+    <strong>Heat.</strong> &nbsp;The keys you pressed stay warm: non-experts recover full short passwords from a
+    thermal image up to 30 seconds after entry, partial input to 60 (Thermanator 2018), and AI-assisted recovery
+    reaches 86% at 20 seconds (ThermoSecure 2023). Accuracy falls with password length — at 50+ characters the
+    keyboard saturates and the image mostly reveals <em>which</em> keys you touched — so the real thermal target is
+    the short PIN or login password guarding the same machine later. The mitigation is free: swipe both palms
+    across the whole keyboard after entry, or wait a minute before leaving it unattended.
   </div>
 
   <div class="security-note">
     <strong>Key derivation.</strong> &nbsp;If using this password as input to software (not as a raw key), ensure the software
     applies a proper KDF (PBKDF2, Argon2, or HKDF). Standard in VeraCrypt, LUKS, KeePass, etc.
     The KDF stretches your high-entropy input and binds it to a salt, producing the actual symmetric key.
+    It is also the first software your key ever touches — which is why this phase began by naming the receiving
+    software a trusted component.
   </div>
 
+  <h2>5 · Prove It Works</h2>
+  <p>
+    Before anything is destroyed, prove the key round-trips. Create the encrypted volume, wallet, or database;
+    close it; reopen it by typing the password fresh from the copy you intend to keep — not from muscle memory of
+    the last five minutes. The software's "confirm password" prompt proves nothing here: if you misread the
+    worksheet once, you will misread it the same way twice. The round trip is the last moment an error is
+    recoverable, because the worksheet still exists. When it passes, and only then, go to phase 6.
+  </p>
+
+  <h2>6 · Keep and Destroy</h2>
   <div class="security-note">
-    <strong>Prior art.</strong> &nbsp;Physical randomness for key generation is well-established. Arnold Reinhold's
-    <em>Diceware</em> (1995) uses five dice to generate passphrases from a 7,776-word list (~12.9 bits/word). The EFF published
-    improved wordlists in 2016 (Joseph Bonneau). In the Bitcoin ecosystem, the Glacier Protocol, ColdCard, BlueWallet,
-    and BitBox02 all support manual entropy input via dice or coins. David Vorick's "coins in a cup" method
-    (Sia Foundation, 2020) uses modular arithmetic on five coins for entropy-preserving debiasing.
-    The Glacier Protocol represents a thorough approach to physical key management.
+    <strong>Keep: the record.</strong> &nbsp;Two fates for two kinds of paper. The record — the sheets with the
+    finished password — is the thing you <strong>keep</strong>. You will not memorize 50-odd random characters (a
+    56-bit string took study participants a median of 36 practice sessions, and 6% never managed it — Bonneau &amp;
+    Schechter 2014); if the paper is lost, the key is lost, and surveys of self-custodied keys consistently find
+    loss, not theft, is the dominant failure (Krombholz 2016). Keep the two verified copies in separate places.
+    Paper begins to char at about 180&nbsp;°C and house fires reach about 700&nbsp;°C, so the copy that must
+    survive one belongs in a UL 72 Class 350 document safe or stamped into a metal plate. For high-value keys,
+    splitting the secret across custodians (SLIP-0039, codex32) is an option — with the honest caveat that its
+    usability for non-experts is largely untested. Every extra copy is one more thing to steal; that tension is
+    real, and where to settle it is your call.
+  </div>
+
+  <div class="security-note warning">
+    <strong>Destroy: everything under the record.</strong> &nbsp;Worksheets, and the sheets that lay beneath them,
+    are what you destroy — after phase 5 has passed and not before. Forensic electrostatic detection (ESDA, first
+    commercialized in 1978 by Foster &amp; Freeman) can recover pen indentations from up to <strong>6 sheets</strong>
+    beneath the page you wrote on. Seward's charge transport model (<em>J. Forensic Sciences</em>, 1999) explains
+    the mechanism: paper-to-paper friction creates differential surface charges detectable by ESDA's corona wire.
+    Under normal storage conditions, impressions can persist for decades.
+    <br><br>
+    <em>Best practice:</em> Write on a single loose sheet on a hard clipboard, the clipboard on a rug or towel
+    (phase 1). If you used a notepad, tear out and destroy the <strong>first 7 pages</strong> beneath the writing
+    sheet. Oblique lighting reveals impressions 3–4 pages deep; ESDA reaches up to 6, hence the 7-page margin.
+    <br><br>
+    <em>Destruction method:</em> Cross-cut shredding (DIN 66399 level P-4) is minimum.
+    For high-security: wet pulp the pages (soak until fibers separate, then blend) or burn to ash.
+    NSA guidance warns that even books thrown into a fire can remain half-readable after an hour.
+    Strip-cut shredding has been reconstructed — most famously by Iranian students during the 1979 hostage crisis.
+    Laser printers also stamp every page with tracking dots identifying the printer and time (Richter et al. 2018,
+    DEDA), so destroying the worksheet covers attribution as well as content — or rule the worksheet by hand on
+    blank paper and the printer never enters the ceremony.
+  </div>
+
+  <h2>Prior Art</h2>
+  <div class="security-note">
+    Physical randomness for key generation is well-established. Arnold Reinhold's
+    <em>Diceware</em> (1995) uses five dice to generate passphrases from a 7,776-word list (~12.9 bits/word); Antonov
+    &amp; Georgieva later gave Diceware-style generation its academic security analysis. The EFF published
+    improved wordlists in 2016 (Joseph Bonneau). In the Bitcoin ecosystem, the Glacier Protocol (unmaintained since
+    ~2020), ColdCard, BlueWallet, and BitBox02 all support manual entropy input via dice or coins, and David Vorick's
+    "coins in a cup" method (Sia Foundation, 2020) uses modular arithmetic on five coins for entropy-preserving
+    debiasing. Post-2020, dice entry went mainstream in hardware signers (SeedSigner, Keystone) — with documented
+    user losses from under-rolling, and an in-firmware dice-to-seed conversion the user cannot check. Ortolan's
+    fixed-length worksheet makes under-rolling structurally impossible, and the paper bijection <em>is</em> the
+    conversion step, checkable by eye.
   </div>
 
   <!-- SHARED REFERENCES -->
@@ -765,7 +943,27 @@
       <li>Bonneau, J. / EFF (2016). <a href="https://www.eff.org/deeplinks/2016/07/new-wordlists-random-passphrases">EFF's New Wordlists for Random Passphrases</a>.</li>
       <li>Vorick, D. (2020). <a href="https://sia.tech/blog/generating-cryptographically-secure-random-numbers-with-coins-and-a-cup">Generating Cryptographically Secure Random Numbers With Coins and A Cup</a>. Sia Foundation.</li>
       <li>Huang, A. "bunnie" (2020). <a href="https://www.bunniestudios.com/blog/2020/introducing-precursor/">Introducing Precursor</a>. See also <a href="https://betrusted.io/">betrusted.io</a>.</li>
-      <li>NIST <a href="https://csrc.nist.gov/pubs/sp/800/90/a/r1/final">SP 800-90A Rev. 1</a> (2015); <a href="https://csrc.nist.gov/pubs/sp/800/131/a/r2/final">SP 800-131A Rev. 2</a> (2019); <a href="https://csrc.nist.gov/pubs/fips/197/final">FIPS 197</a> (2001).</li>
+      <li>NIST <a href="https://csrc.nist.gov/pubs/sp/800/90/a/r1/final">SP 800-90A Rev. 1</a> (2015); <a href="https://nvlpubs.nist.gov/nistpubs/specialpublications/nist.sp.800-90b.pdf">SP 800-90B</a> (2018); <a href="https://csrc.nist.gov/pubs/sp/800/131/a/r2/final">SP 800-131A Rev. 2</a> (2019); <a href="https://csrc.nist.gov/pubs/fips/197/final">FIPS 197</a> (2001).</li>
+      <li>Ellison, C. (2007). <a href="https://eprint.iacr.org/2007/399.pdf">Ceremony Design and Analysis</a>. IACR ePrint 2007/399.</li>
+      <li>Barchard, K. &amp; Pace, L. (2011). <a href="https://www.sciencedirect.com/science/article/abs/pii/S0747563211000707">Preventing human error: The impact of data entry methods on data accuracy</a>. <em>Computers in Human Behavior</em>, 27(5).</li>
+      <li>Chatterjee, R. et al. (2016). <a href="https://ieeexplore.ieee.org/document/7546536/">pASSWORD tYPOS and How to Correct Them Securely</a>. IEEE S&amp;P.</li>
+      <li>Halderman, J.A. et al. (2008). <a href="https://jhalderm.com/pub/papers/coldboot-sec08.pdf">Lest We Remember: Cold Boot Attacks on Encryption Keys</a>. USENIX Security.</li>
+      <li>CVE-2023-32784: KeePass master password recovery from memory. <a href="https://github.com/vdohney/keepass-password-dumper">Proof of concept</a>.</li>
+      <li>Harrison, J., Toreini, E., &amp; Mehrnezhad, M. (2023). <a href="https://arxiv.org/abs/2308.01074">A Practical Deep Learning-Based Acoustic Side Channel Attack on Keyboards</a>. IEEE EuroS&amp;PW.</li>
+      <li>Compagno, A., Conti, M., Lain, D., &amp; Tsudik, G. (2017). <a href="https://dl.acm.org/doi/10.1145/3052973.3053005">Don't Skype &amp; Type! Acoustic Eavesdropping in Voice-over-IP</a>. AsiaCCS.</li>
+      <li>Onishi, T. et al. (2025). <a href="https://www.usenix.org/conference/usenixsecurity25/presentation/onishi">Sound of Interference: RF leakage of MEMS microphone audio</a>. USENIX Security.</li>
+      <li>Nassi, B. et al. (2022). <a href="https://www.usenix.org/conference/usenixsecurity22/presentation/nassi">Lamphone: Passive Sound Recovery from a Desk Lamp's Light Bulb Vibrations</a>. USENIX Security.</li>
+      <li>Kaczmarek, T., Ozturk, E., &amp; Tsudik, G. (2018). <a href="https://arxiv.org/abs/1806.10189">Thermanator</a>; Alotaibi, N., Williamson, J., &amp; Khamis, M. (2023). <a href="https://dl.acm.org/doi/10.1145/3563693">ThermoSecure</a>. ACM TOPS.</li>
+      <li>Sabra, M., Maiti, A., &amp; Jadliwala, M. (2021). <a href="https://www.ndss-symposium.org/ndss-paper/zoom-on-the-keystrokes-exploiting-video-calls-for-keystroke-inference-attacks/">Zoom on the Keystrokes</a>. NDSS; <a href="https://arxiv.org/abs/2205.03971">Private Eye</a> (2023). IEEE S&amp;P.</li>
+      <li>Liu, Z. et al. (2021). <a href="https://www.ndss-symposium.org/ndss-paper/screen-gleaning-a-screen-reading-tempest-attack-on-mobile-devices-exploiting-an-electromagnetic-side-channel/">Screen Gleaning</a>. NDSS; <a href="https://arxiv.org/html/2407.09717v1">Deep-TEMPEST</a> (2024).</li>
+      <li>Krombholz, K. et al. (2016). <a href="https://fc16.ifca.ai/preproceedings/33_Krombholz.pdf">The Other Side of the Coin: User Experiences with Bitcoin Security and Privacy</a>. Financial Cryptography.</li>
+      <li>Bonneau, J. &amp; Schechter, S. (2014). <a href="https://www.usenix.org/conference/usenixsecurity14/technical-sessions/presentation/bonneau">Towards Reliable Storage of 56-bit Secrets in Human Memory</a>. USENIX Security.</li>
+      <li><a href="https://milksad.info/">Milk Sad</a> (CVE-2023-39910, 2023); Trust Wallet CVE-2023-31290.</li>
+      <li>Richter, T., Escher, S., Schönfeld, D., &amp; Strufe, T. (2018). <a href="https://github.com/dfd-tud/deda">Forensic Analysis and Anonymisation of Printer Machine Identification Codes (DEDA)</a>. TU Dresden.</li>
+      <li><a href="https://github.com/bitcoin/bips/blob/master/bip-0093.mediawiki">BIP-93 codex32</a>: hand-computable checksummed seed format; <a href="https://github.com/satoshilabs/slips/blob/master/slip-0039.md">SLIP-0039</a>: Shamir backup.</li>
+      <li>Sami, S. et al. (2021). <a href="https://dl.acm.org/doi/10.1145/3485730.3493371">LAPD: Hidden Spy Camera Detection using Smartphone Time-of-Flight Sensors</a>. ACM SenSys.</li>
+      <li>Papadopoulos, A., Nguyen, T., Durmus, E., &amp; Memon, N. (2017). <a href="https://arxiv.org/abs/1708.06508">IllusionPIN: Shoulder-Surfing Resistant Authentication Using Hybrid Images</a>. <em>IEEE TIFS</em>.</li>
+      <li>Antonov, P. &amp; Georgieva, N. (2020). <a href="https://isij.eu/system/files/download-count/2023-01/4719_diceware_passphrases.pdf">Security Analysis of Diceware Passphrases</a>. <em>Information &amp; Security</em>, 47(2).</li>
     </ol>
   </div>
 

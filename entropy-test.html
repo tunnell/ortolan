@@ -272,8 +272,8 @@
   <a href="index.html" class="nav-link">&larr; Back to Password Generator</a>
 
   <div class="warning-box">
-    <strong>Do not use these test rolls/flips for your actual password.</strong>
-    This tool verifies fairness <em>before</em> you generate a password. Even though all computation runs locally, using the same rolls introduces trust in your current device. Test with ~100 rolls/flips here, then generate your real password offline on paper.
+    <strong>Do not use these test rolls/flips for your actual password — and do not run this tool in the same room, or on the same day, that you generate.</strong>
+    The tester belongs to phase 1, preparation: it checks your equipment on a device the ceremony afterwards excludes. Even though all computation runs locally, using the same rolls introduces trust in your current device. Test with ~100 rolls/flips here; generate your real password another day, on paper, with this device out of the room.
   </div>
 
   <!-- Tabs -->
@@ -287,7 +287,7 @@
     <div class="input-section">
       <label>Dice rolls (digits 1–6)</label>
       <textarea id="diceInput" placeholder="5 1 2 1 5 1 2 6 3 6 1 6 2 3 6 ..."></textarea>
-      <div class="input-hint">Enter digits 1-6 in any format. Other characters are ignored.</div>
+      <div class="input-hint">Enter digits 1-6 in any format. Other characters are ignored. Test one die at a time and label the streams — a pooled stream can hide two opposite biases that cancel.</div>
       <div id="diceError" class="error-msg"></div>
       <div class="live-count">
         <span>Rolls: <b id="diceCount">0</b></span>
@@ -314,12 +314,12 @@
         <div class="card-title">Entropy Estimates</div>
         <div class="big-row">
           <div class="big-cell">
-            <div class="big-number" id="diceBigShannon">—</div>
-            <div class="big-label">Shannon 95% worst-case</div>
-          </div>
-          <div class="big-cell">
             <div class="big-number" id="diceBigMinEnt">—</div>
             <div class="big-label">Min-entropy 95% worst-case</div>
+          </div>
+          <div class="big-cell">
+            <div class="big-number" id="diceBigShannon">—</div>
+            <div class="big-label">Shannon entropy (observed)</div>
           </div>
           <div class="big-cell">
             <div class="big-number" id="diceBigFair">—</div>
@@ -376,12 +376,12 @@
         <div class="card-title">Entropy Estimates</div>
         <div class="big-row">
           <div class="big-cell">
-            <div class="big-number" id="coinBigShannon">—</div>
-            <div class="big-label">Shannon entropy (bits)</div>
-          </div>
-          <div class="big-cell">
             <div class="big-number" id="coinBigMinEnt">—</div>
             <div class="big-label">Min-entropy 95% worst-case</div>
+          </div>
+          <div class="big-cell">
+            <div class="big-number" id="coinBigShannon">—</div>
+            <div class="big-label">Shannon entropy (observed)</div>
           </div>
           <div class="big-cell">
             <div class="big-number" id="coinBigFair">—</div>
@@ -389,8 +389,10 @@
           </div>
         </div>
         <div class="method-note">
-          <b>Shannon entropy</b> for coins is computed from observed proportions.<br>
-          <b>Min-entropy 95% worst-case</b> uses the Wilson upper bound on the more frequent outcome.
+          <b>Min-entropy 95% worst-case</b> (Wilson upper bound on the more frequent outcome) is the conservative
+          measure NIST SP 800-90B uses for key material. <b>Shannon entropy</b> is computed from observed
+          proportions and is descriptive only. Neither test can see same-side correlation — see
+          "How Many Rolls/Flips" below.
         </div>
       </div>
     </div>
@@ -422,23 +424,33 @@
     <div class="formula-box">p̂ᵤₚₚₑᵣ = (p̂ + z²/2n + z√(p̂(1-p̂)/n + z²/4n²)) / (1 + z²/n)</div>
 
     <h3>How Many Rolls/Flips Do I Need?</h3>
-    <p><strong>I recommend ~100.</strong> This provides good statistical power for detecting meaningful bias.</p>
-    <ul>
-      <li><strong>~60:</strong> Detect gross bias (30%+ deviation)</li>
-      <li><strong>~100:</strong> Good power for moderate bias (recommended)</li>
-      <li><strong>~300+:</strong> Detect subtle bias (~20% deviation)</li>
-    </ul>
+    <p><strong>~100 is a screen, not a proof.</strong> It catches gross loading (a face at 30%+); ~300 catches
+    moderate loading; the ~2% biases typical of commodity dice need roughly 3,000 rolls to detect (Campbell &amp;
+    Dolan). A green result means "no bias detected at this sample size" — reassurance, not proof. Test one die at
+    a time and label the streams — a pooled stream can hide two opposite biases that cancel.</p>
+    <p>For coins, know what this page cannot see: the documented human-flip bias is same-side <em>correlation</em>
+    with a perfectly fair marginal rate (Bartoš et al.) — invisible to the binomial test at any sample size, and
+    needing ~30,000 flips before the runs test has power. It is fixed by procedure, not statistics: randomize the
+    coin's starting side before each flip, as the card's procedure instructs.</p>
 
     <h3>References</h3>
     <ul>
       <li>Campbell, W. & Dolan, D. (2019). Dice Mythbusters. Western Kentucky University.</li>
       <li>Bartoš, F. et al. (2023). Fair coins tend to land on the same side they started. arXiv:2310.04153.</li>
       <li>Wilson, E.B. (1927). Probable Inference, the Law of Succession, and Statistical Inference. JASA.</li>
+      <li>NIST SP 800-90B (2018). Recommendation for the Entropy Sources Used for Random Bit Generation.</li>
     </ul>
   </div>
 </div>
 
 <script>
+// Deferred deliberately:
+// (1) Same-side tally mode (record start + outcome per flip) — the card's procedural fix
+//     (randomize the starting side) removes the hazard it would measure. Possible v2.
+// (2) Dice serial/transition test — no documented physical mechanism produces serial
+//     correlation in tumbling dice (unlike coins, where precession supplies one), so this
+//     is deferred on mechanism grounds, not sample-size grounds.
+
 // ══════════════════════════════════════════════════
 // Shared Math Functions
 // ══════════════════════════════════════════════════
@@ -531,10 +543,7 @@ function analyzeDice(rolls) {
   const pMaxUpper95 = wilsonInterval(maxCount, n, 1.96).upper;
   const H_min_worst95 = -Math.log2(Math.min(pMaxUpper95, 0.999));
 
-  // Simplified Shannon worst-case (use min-entropy based approximation)
-  const shannonWorst95 = Math.max(H_mle - 0.1, H_min_worst95);
-
-  return { n, counts, phat, chi2, pValue, H_FAIR, H_mle, H_min_mle, H_min_worst95, pMaxUpper95, shannonWorst95 };
+  return { n, counts, phat, chi2, pValue, H_FAIR, H_mle, H_min_mle, H_min_worst95, pMaxUpper95 };
 }
 
 function renderDiceResults(r) {
@@ -554,17 +563,16 @@ function renderDiceResults(r) {
   document.getElementById('diceChi2Stat').textContent = r.chi2.toFixed(4);
   document.getElementById('diceChi2P').textContent = r.pValue.toFixed(4);
   document.getElementById('diceVerdict').innerHTML = r.pValue >= 0.05
-    ? '<div class="verdict pass">✓ PASS — No evidence of bias</div>'
+    ? '<div class="verdict pass">✓ PASS — no bias detected at this sample size</div>'
     : '<div class="verdict fail">✗ FAIL — Significant bias detected</div>';
 
-  document.getElementById('diceBigShannon').textContent = (r.shannonWorst95 * r.n).toFixed(0);
+  document.getElementById('diceBigShannon').textContent = (r.H_mle * r.n).toFixed(0);
   document.getElementById('diceBigMinEnt').textContent = (r.H_min_worst95 * r.n).toFixed(0);
   document.getElementById('diceBigFair').textContent = (r.H_FAIR * r.n).toFixed(0);
 
   const rows = [
     { label: 'Fair die (theoretical max)', h: r.H_FAIR, cls: '' },
-    { label: 'MLE (observed)', h: r.H_mle, cls: '' },
-    { label: 'Shannon 95% worst-case', h: r.shannonWorst95, cls: 'highlight' },
+    { label: 'Shannon (observed MLE)', h: r.H_mle, cls: '' },
     { label: 'Min-entropy 95% worst-case', h: r.H_min_worst95, cls: 'highlight' },
   ];
   document.getElementById('diceEntropyTable').innerHTML = rows.map(row =>
@@ -572,7 +580,7 @@ function renderDiceResults(r) {
   ).join('');
 
   document.getElementById('diceMethodNote').innerHTML =
-    '<b>Shannon 95% worst-case</b> is a conservative entropy estimate. <b>Min-entropy</b> uses Wilson upper bound on the most frequent face.';
+    '<b>Min-entropy 95% worst-case</b> (Wilson upper bound on the most frequent face) is the conservative measure NIST SP 800-90B uses for key material. <b>Shannon (observed)</b> is descriptive only.';
 }
 
 // ══════════════════════════════════════════════════
@@ -618,7 +626,7 @@ function renderCoinResults(r) {
   document.getElementById('coinCI').textContent = `[${r.ci.lower.toFixed(4)}, ${r.ci.upper.toFixed(4)}]`;
   document.getElementById('coinBinomP').textContent = r.binomP.toFixed(4);
   document.getElementById('coinBinomVerdict').innerHTML = r.binomP >= 0.05
-    ? '<div class="verdict pass">✓ PASS — No evidence of bias</div>'
+    ? '<div class="verdict pass">✓ PASS — no bias detected at this sample size</div>'
     : '<div class="verdict fail">✗ FAIL — Significant proportion bias</div>';
 
   document.getElementById('coinRuns').textContent = r.runs;
@@ -626,7 +634,7 @@ function renderCoinResults(r) {
   document.getElementById('coinRunsZ').textContent = r.runsZ.toFixed(3);
   document.getElementById('coinRunsP').textContent = r.runsP.toFixed(4);
   document.getElementById('coinRunsVerdict').innerHTML = r.runsP >= 0.05
-    ? '<div class="verdict pass">✓ PASS — No evidence of patterns</div>'
+    ? '<div class="verdict pass">✓ PASS — no patterns detected at this sample size</div>'
     : '<div class="verdict fail">✗ FAIL — Non-random pattern detected</div>';
 
   document.getElementById('coinBigShannon').textContent = (r.H_mle * r.n).toFixed(0);
