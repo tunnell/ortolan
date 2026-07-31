@@ -62,6 +62,7 @@
   .mode-tab:hover { color: #555; background: #ebe9e4; }
   .mode-tab.active-coin { background: #fff; color: #2d5a27; border-color: #e0e0e0; }
   .mode-tab.active-dice { background: #fff; color: #1a4a6e; border-color: #e0e0e0; }
+  .mode-tab.active-words { background: #fff; color: #5a3d7a; border-color: #e0e0e0; }
   .mode-content { display: none; }
   .mode-content.active { display: block; }
 
@@ -77,6 +78,10 @@
   .steps-blue li::before { background: #1a4a6e; color: #fff; }
   .steps-green li.verify-step::before { background: #fff; color: #2d5a27; box-shadow: inset 0 0 0 2px #2d5a27; }
   .steps-blue li.verify-step::before { background: #fff; color: #1a4a6e; box-shadow: inset 0 0 0 2px #1a4a6e; }
+  .steps-purple li::before { background: #5a3d7a; color: #fff; }
+  .steps-purple li.verify-step::before { background: #fff; color: #5a3d7a; box-shadow: inset 0 0 0 2px #5a3d7a; }
+  .summary-table .highlight-purple { background: #f3eefa; font-weight: 600; color: #5a3d7a; }
+  .example-box .result-purple { color: #5a3d7a; }
   .steps li strong { color: #222; }
 
   .table-section { margin: 1.5rem 0; }
@@ -359,9 +364,149 @@
 
   <!-- TABBED SECTIONS -->
   <div class="mode-tabs">
-    <div class="mode-tab active-dice" id="tabDice" onclick="switchMode('dice')">Dice &nbsp;(50 rolls of 2d6)</div>
+    <div class="mode-tab active-words" id="tabWords" onclick="switchMode('words')">Words &nbsp;(20 words of 5d6)</div>
+    <div class="mode-tab" id="tabDice" onclick="switchMode('dice')">Dice &nbsp;(50 rolls of 2d6)</div>
     <div class="mode-tab" id="tabCoin" onclick="switchMode('coin')">Coin &nbsp;(256 flips)</div>
   </div>
+
+  <!-- ===== WORDS TAB ===== -->
+  <div class="mode-content active" id="contentWords">
+
+    <h2>Design — Words</h2>
+    <p>
+      A passphrase instead of a character string: <strong>20 words</strong> drawn from the
+      <a href="eff_large_wordlist.txt">EFF large wordlist</a>, each selected by five dice rolls read as a
+      number from <code>11111</code> to <code>66666</code>. Since 6<sup>5</sup>&nbsp;=&nbsp;7,776, every
+      five-roll group maps to exactly one word with zero waste — 12.9 bits per word, 258.5 bits for 20.
+      Words are the default because paper and fingers survive them: a misread character inside
+      <code>dragster</code> is obvious and recoverable, where one in a random string is fatal
+      (Chatterjee 2016). The costs are length — about 150 characters with separators — and needing the
+      wordlist at the table: print it beforehand. The list is public; only your rolls are secret.
+    </p>
+
+    <table class="summary-table">
+      <tr><th>Total Rolls</th><th>Words</th><th>Bits/Word</th><th>Passphrase Length</th><th>Entropy (Shannon)</th></tr>
+      <tr class="highlight-purple"><td>100 (20 × 5d6)</td><td>20</td><td>log<sub>2</sub>(7776) ≈ 12.92</td><td>~150 chars with spaces</td><td>258.5 bits</td></tr>
+    </table>
+
+    <p class="convention">Roll one die five times in order, or five distinguishable dice read in a fixed order. <strong>Never sort or rearrange dice by value</strong> — reading them in size order collapses 12.9 bits per word to 8.0.</p>
+    <p class="convention">Join words with a single space. The separator carries no entropy, but the exact string is the password — pick one and keep it forever. (No word in the list begins another, so even no separator is unambiguous.)</p>
+
+    <!-- Words Worked Example -->
+    <div class="example-box">
+      <div class="label">Worked Example (first 3 words from 15 rolls)</div>
+      <code>Rolls: 2 4 1 3 6 &nbsp;|&nbsp; 4 1 5 2 5 &nbsp;|&nbsp; 1 3 4 5 6</code><br>
+      <code>Lookup: 24136 → dragster &nbsp;&nbsp; 41525 → mumps &nbsp;&nbsp; 13456 → blog</code><br>
+      <div class="result result-purple">dragster mumps blog ...</div>
+    </div>
+
+    <h2>Procedure — Words <span style="font-weight:400;color:#888;font-size:0.85rem;">(phases 2 and 3)</span></h2>
+    <ol class="steps steps-purple">
+      <li>Roll a die <strong>five times</strong>, writing each digit as it lands, left to right
+        (e.g., <code>24136</code>).</li>
+      <li>Find the five-digit number in the <a href="eff_large_wordlist.txt">wordlist</a> and write the word
+        in the Word column.</li>
+      <li>Repeat steps 1–2 for <strong>20 words</strong>. Generation ends here; the key now exists on paper.
+        (A die misread as it lands costs nothing — whatever you wrote is the key, and it's just as random.
+        Errors <em>after</em> the written record are the ones that lock you out.)</li>
+      <li class="verify-step">Verify: cover the Word column, redo every lookup from the digit columns, and
+        write the result in the Check column. Where the two disagree, the lookup was wrong — fix it from the
+        raw digits. Proofreading by eye misses errors; an independent second entry is the method that actually
+        works (Barchard 2011).</li>
+      <li class="verify-step">Transcribe the Word column into <strong>both</strong> record grids below, one
+        space between words.</li>
+      <li class="verify-step">Read each record back against the worksheet, word by word, pointing with a
+        pencil.</li>
+    </ol>
+
+    <h3>Words Recording Worksheet</h3>
+    <p style="font-size:0.85rem; color:#666;">All 20 words use the wordlist (5 rolls per word). Word errors
+      are rarer and more visible than character errors, but the Check column costs two minutes — spend them.</p>
+    <div class="worksheet-double">
+      <div class="worksheet"><table>
+        <tr><th>#</th><th>D1</th><th>D2</th><th>D3</th><th>D4</th><th>D5</th><th>Word</th><th>Check</th></tr>
+        <tr><td>1</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
+        <tr><td>2</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
+        <tr><td>3</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
+        <tr><td>4</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
+        <tr><td>5</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
+        <tr><td>6</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
+        <tr><td>7</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
+        <tr><td>8</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
+        <tr><td>9</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
+        <tr><td>10</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
+      </table></div>
+      <div class="worksheet"><table>
+        <tr><th>#</th><th>D1</th><th>D2</th><th>D3</th><th>D4</th><th>D5</th><th>Word</th><th>Check</th></tr>
+        <tr><td>11</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
+        <tr><td>12</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
+        <tr><td>13</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
+        <tr><td>14</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
+        <tr><td>15</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
+        <tr><td>16</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
+        <tr><td>17</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
+        <tr><td>18</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
+        <tr><td>19</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
+        <tr><td>20</td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td><td class="write-in"></td></tr>
+      </table></div>
+    </div>
+
+    <h3>The Record — Make Two</h3>
+    <div class="example-box">
+      <div class="label">Copy 1</div>
+      <div class="password-display" style="font-size:0.95rem;">
+        ________ &nbsp; ________ &nbsp; ________ &nbsp; ________ &nbsp; ________<br>
+        ________ &nbsp; ________ &nbsp; ________ &nbsp; ________ &nbsp; ________<br>
+        ________ &nbsp; ________ &nbsp; ________ &nbsp; ________ &nbsp; ________<br>
+        ________ &nbsp; ________ &nbsp; ________ &nbsp; ________ &nbsp; ________
+      </div>
+      <span style="font-size:0.82rem; color:#888; display:block; margin-top:0.5rem;">
+        20 words, one space between &nbsp;|&nbsp; EFF large wordlist (7,776 words)
+      </span>
+    </div>
+    <div class="example-box">
+      <div class="label">Copy 2</div>
+      <div class="password-display" style="font-size:0.95rem;">
+        ________ &nbsp; ________ &nbsp; ________ &nbsp; ________ &nbsp; ________<br>
+        ________ &nbsp; ________ &nbsp; ________ &nbsp; ________ &nbsp; ________<br>
+        ________ &nbsp; ________ &nbsp; ________ &nbsp; ________ &nbsp; ________<br>
+        ________ &nbsp; ________ &nbsp; ________ &nbsp; ________ &nbsp; ________
+      </div>
+    </div>
+    <p class="phase-note">Fill in both, check them against each other word by word, and store them in
+      different places (phase 6). This passphrase cannot be regenerated — the two copies are the key. Words
+      make later recovery forgiving: a smudged word is usually obvious from the list.</p>
+
+    <!-- WORDS SECURITY NOTES -->
+    <h2>Words Security Notes</h2>
+
+    <div class="security-note">
+      <strong>Dice caveats apply.</strong> &nbsp;Everything in the Dice tab's notes — bias magnitudes,
+      whose-dice caution, tumbling technique — applies here unchanged; the wordlist only changes the encoding.
+      One addition: check that the consuming software accepts a 150-character passphrase before you roll
+      (some fields cap at 64), and type it exactly — same case, same separators — every time.
+    </div>
+
+    <div class="security-note info">
+      <strong>The wordlist.</strong> &nbsp;<code>eff_large_wordlist.txt</code> ships in this repo unmodified:
+      7,776 words of 3–9 letters, curated by Joseph Bonneau for memorability and distinctness, with no word
+      beginning another. © Electronic Frontier Foundation, CC BY 4.0 — separate from this card's CC0
+      dedication. Verify your copy has exactly 7,776 lines, and spot-check a few lookups against
+      <a href="https://www.eff.org/deeplinks/2016/07/new-wordlists-random-passphrases">EFF's published
+      list</a> before first use — the same integrity logic as the printed tables.
+    </div>
+
+    <!-- WORDS REFERENCES -->
+    <div class="ref-section">
+      <h3>Words References</h3>
+      <ol class="ref-list">
+        <li>Bonneau, J. / EFF (2016). <a href="https://www.eff.org/deeplinks/2016/07/new-wordlists-random-passphrases">Deep Dive: EFF's New Wordlists for Random Passphrases</a>.</li>
+        <li>Reinhold, A. (1995). <a href="https://theworld.com/~reinhold/diceware.html">The Diceware Passphrase Home Page</a>.</li>
+      </ol>
+    </div>
+
+  </div><!-- /contentWords -->
+
 
   <!-- ===== COIN TAB ===== -->
   <div class="mode-content" id="contentCoin">
@@ -616,7 +761,7 @@
 
 
   <!-- ===== DICE TAB ===== -->
-  <div class="mode-content active" id="contentDice">
+  <div class="mode-content" id="contentDice">
 
     <h2>Design — Dice</h2>
     <p>
@@ -970,17 +1115,14 @@
 </div>
 <script>
 function switchMode(mode) {
-  document.getElementById('contentCoin').classList.remove('active');
-  document.getElementById('contentDice').classList.remove('active');
-  document.getElementById('tabCoin').classList.remove('active-coin');
-  document.getElementById('tabDice').classList.remove('active-dice');
-  if (mode === 'coin') {
-    document.getElementById('contentCoin').classList.add('active');
-    document.getElementById('tabCoin').classList.add('active-coin');
-  } else {
-    document.getElementById('contentDice').classList.add('active');
-    document.getElementById('tabDice').classList.add('active-dice');
+  for (const m of ['words', 'dice', 'coin']) {
+    const name = m.charAt(0).toUpperCase() + m.slice(1);
+    document.getElementById('content' + name).classList.remove('active');
+    document.getElementById('tab' + name).classList.remove('active-' + m);
   }
+  const name = mode.charAt(0).toUpperCase() + mode.slice(1);
+  document.getElementById('content' + name).classList.add('active');
+  document.getElementById('tab' + name).classList.add('active-' + mode);
 }
 </script>
 </body>

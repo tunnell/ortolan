@@ -6,17 +6,18 @@ A printable reference card for generating a 256-bit password from dice rolls or 
 
 | Method | Actions | Password | Entropy | Alphabet |
 |--------|---------|----------|---------|----------|
+| Words | 100 rolls (20 × 5d6) | 20 words (~150 chars) | 258.5 bits | EFF large wordlist (7,776 words) |
 | Dice | 50 rolls of 2d6 | 50 characters | 258.5 bits | a–z, 0–9 (36 chars) |
 | Coin | 256 flips | 52 characters | 256 bits | Crockford Base32 (32 chars) |
 
-Both encodings are zero-waste bijections: each roll of two dice maps onto one of 36 characters (6 × 6), each group of five coin flips onto one of 32 (2⁵). The coin alphabet is Crockford's Base32, which drops i, l, o, and u so a handwritten key can't be misread. Everything happens on paper, and the mapping is simple enough to check by hand. No computer touches the key until you type it in — at which point the endpoint is exactly as trusted as it is for any password; the card's phase 4 covers what that means.
+All three encodings are zero-waste bijections: five dice rolls map onto one of 7,776 words (6⁵), each roll of two dice onto one of 36 characters (6 × 6), each group of five coin flips onto one of 32 (2⁵). The coin alphabet is Crockford's Base32, which drops i, l, o, and u so a handwritten key can't be misread. Words is the default tab because passphrases survive handwriting and typing better than random characters do; the wordlist ships in the repo as `eff_large_wordlist.txt`. Everything happens on paper, and the mapping is simple enough to check by hand. No computer touches the key until you type it in — at which point the endpoint is exactly as trusted as it is for any password; the card's phase 4 covers what that means.
 
 ## The ceremony
 
 Six phases, in order; the trust you carry in each is tabulated at the top of the card.
 
 1. Prepare: every device with a microphone or radio out of the room, powered off — not muted. If you tested your dice for fairness, that was another day.
-2. Generate: 50 rolls of two dice against Table D, or 256 coin flips against Tables A and B, under the blanket. Coins: shake between cupped hands so you never know the starting side, flip, catch — never spin. Insert a `.` every 5 characters for readability (the dots carry no entropy; keeping them is a good default).
+2. Generate: 20 five-roll words against the EFF wordlist, 50 rolls of two dice against Table D, or 256 coin flips against Tables A and B, under the blanket. Coins: shake between cupped hands so you never know the starting side, flip, catch — never spin. For character modes, insert a `.` every 5 characters for readability (the dots carry no entropy; keeping them is a good default).
 3. Verify: a second, independent lookup pass into the worksheet's Check column, then read both record copies back character by character. Unchecked, roughly one transcription in three carries a silent error.
 4. Enter: type the key blind into a masked field, never displayed on a screen. From here the machine is trusted exactly as it is for any password.
 5. Prove: create the encrypted volume or wallet, close it, and reopen it by typing from the copy you intend to keep — only then destroy anything.
@@ -46,4 +47,4 @@ Issues and PRs welcome. The card's whole value is correctness, so reports of err
 
 ## License
 
-Copyright 2026 @tunnell, dedicated to the public domain under [CC0 1.0](LICENSE). The one exception is the bird photo, `ortolan.jpg`, which is by [Pierre Dalous](https://commons.wikimedia.org/w/index.php?curid=26699114) under CC BY-SA 3.0 and is not part of the dedication.
+Copyright 2026 @tunnell, dedicated to the public domain under [CC0 1.0](LICENSE). Two exceptions, neither part of the dedication: the bird photo `ortolan.jpg`, by [Pierre Dalous](https://commons.wikimedia.org/w/index.php?curid=26699114) under CC BY-SA 3.0, and the wordlist `eff_large_wordlist.txt`, © the Electronic Frontier Foundation ([Joseph Bonneau, 2016](https://www.eff.org/deeplinks/2016/07/new-wordlists-random-passphrases)), redistributed unmodified under [CC BY 4.0](https://www.eff.org/copyright).
