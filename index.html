@@ -87,6 +87,14 @@
 
   .wordlist-box { border: 1px solid #e0e0e0; border-radius: 5px; padding: 0.8rem 1rem; margin: 0.6rem 0 1rem 0; max-height: 420px; overflow-y: auto; }
   .wordlist-pre { column-count: 4; column-gap: 1.6rem; font-family: 'Courier New', monospace; font-size: 0.7rem; line-height: 1.45; margin: 0; }
+
+  .lookup-tool { border: 1px dashed #c9a227; border-radius: 5px; padding: 0.9rem 1.1rem; margin: 1.2rem 0; font-size: 0.88rem; background: #fffdf5; }
+  .lookup-tool .lookup-gate { display: flex; gap: 0.55rem; align-items: flex-start; cursor: pointer; }
+  .lookup-tool input[type="checkbox"] { margin-top: 0.25rem; }
+  .lookup-body { margin-top: 0.8rem; }
+  .lookup-body textarea { width: 100%; min-height: 60px; font-family: 'Courier New', monospace; font-size: 0.9rem; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
+  .lookup-hint { font-size: 0.8rem; color: #888; margin: 0.3rem 0 0.5rem 0; }
+  .lookup-result { font-family: 'Courier New', monospace; font-size: 1.05rem; font-weight: 700; letter-spacing: 0.04em; color: #333; min-height: 1.4em; word-break: break-all; }
   .steps li strong { color: #222; }
 
   .table-section { margin: 1.5rem 0; }
@@ -8747,6 +8755,22 @@
   </div><!-- /contentDice -->
 
 
+  <!-- LOOKUP HELPER (screen only, gated behind the checkbox; hidden in print) -->
+  <div class="lookup-tool no-print">
+    <label class="lookup-gate">
+      <input type="checkbox" id="lookupEnable" onchange="toggleLookup()">
+      <span><strong>For testing only.</strong> Enable the in-page lookup helper. For a real key, print the
+      card — or at the very least disconnect from the internet first; everything here works offline.</span>
+    </label>
+    <div id="lookupBody" class="lookup-body" hidden>
+      <label for="lookupInput" style="font-size:0.85rem; color:#555; font-weight:600;">Rolls or flips —
+        <span id="lookupMode">Words</span> mode (follows the selected tab)</label>
+      <textarea id="lookupInput" spellcheck="false"></textarea>
+      <div class="lookup-hint" id="lookupHint"></div>
+      <div class="lookup-result" id="lookupResult">—</div>
+    </div>
+  </div>
+
   <!-- SHARED PHASES 4–6 (always visible) -->
   <p class="phase-note">From here the phases are shared — the instrument no longer matters.</p>
   <h2>4 · Enter</h2>
@@ -8897,6 +8921,8 @@
 
 </div>
 <script>
+let currentMode = 'words';
+
 function switchMode(mode) {
   for (const m of ['words', 'dice', 'coin']) {
     const name = m.charAt(0).toUpperCase() + m.slice(1);
@@ -8906,7 +8932,75 @@ function switchMode(mode) {
   const name = mode.charAt(0).toUpperCase() + mode.slice(1);
   document.getElementById('content' + name).classList.add('active');
   document.getElementById('tab' + name).classList.add('active-' + mode);
+  currentMode = mode;
+  updateLookup();
 }
+
+// Lookup helper. All data comes from the tables printed on this page: the dice and coin
+// alphabets below mirror Table D and Tables A/B, and the wordlist is parsed from the
+// embedded list itself, so the helper cannot drift from what the paper says.
+const DICE_ALPHA = 'abcdefghijklmnopqrstuvwxyz0123456789';
+const COIN_ALPHA = '0123456789abcdefghjkmnpqrstvwxyz';
+let wordlistCache = null;
+
+function getWordlist() {
+  if (!wordlistCache) {
+    wordlistCache = {};
+    for (const line of document.querySelector('.wordlist-pre').textContent.split('\n')) {
+      const parts = line.trim().split(/\s+/);
+      if (parts.length === 2) wordlistCache[parts[0]] = parts[1];
+    }
+  }
+  return wordlistCache;
+}
+
+function toggleLookup() {
+  document.getElementById('lookupBody').hidden = !document.getElementById('lookupEnable').checked;
+  updateLookup();
+}
+
+function withDots(chars) {
+  const groups = [];
+  for (let i = 0; i < chars.length; i += 5) groups.push(chars.slice(i, i + 5).join(''));
+  return groups.join(' . ');
+}
+
+function updateLookup() {
+  const body = document.getElementById('lookupBody');
+  if (body.hidden) return;
+  const names = { words: 'Words', dice: 'Dice', coin: 'Coin' };
+  document.getElementById('lookupMode').textContent = names[currentMode];
+  const hints = {
+    words: 'Die rolls as digits 1–6; every 5 become one word. 100 rolls make the full passphrase.',
+    dice: 'Die rolls as digits 1–6, in pairs (first die, second die); every 2 become one character via Table D. 100 digits make the full password.',
+    coin: 'Flips as H/T or 1/0 (Heads = 1); every 5 bits become one character via Table A, the 256th bit via Table B.',
+  };
+  document.getElementById('lookupHint').textContent = hints[currentMode];
+  const raw = document.getElementById('lookupInput').value;
+  let out = '';
+  if (currentMode === 'words') {
+    const d = raw.replace(/[^1-6]/g, '');
+    const words = [];
+    for (let i = 0; i + 5 <= d.length && words.length < 20; i += 5) words.push(getWordlist()[d.slice(i, i + 5)]);
+    out = words.join(' ');
+  } else if (currentMode === 'dice') {
+    const d = raw.replace(/[^1-6]/g, '');
+    const chars = [];
+    for (let i = 0; i + 2 <= d.length && chars.length < 50; i += 2)
+      chars.push(DICE_ALPHA[(+d[i] - 1) * 6 + (+d[i + 1] - 1)]);
+    out = withDots(chars);
+  } else {
+    const bits = raw.toUpperCase().replace(/[^HT10]/g, '').replace(/H/g, '1').replace(/T/g, '0');
+    const chars = [];
+    for (let i = 0; i + 5 <= bits.length && chars.length < 51; i += 5)
+      chars.push(COIN_ALPHA[parseInt(bits.slice(i, i + 5), 2)]);
+    if (bits.length >= 256 && chars.length === 51) chars.push(bits[255]);
+    out = withDots(chars);
+  }
+  document.getElementById('lookupResult').textContent = out || '—';
+}
+
+document.getElementById('lookupInput').addEventListener('input', updateLookup);
 </script>
 </body>
 </html>
